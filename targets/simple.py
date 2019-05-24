@@ -15,6 +15,7 @@ def add(a, b):
 def simple(a, b):
     a = a + b
     c = add(a, b)
-    d = TheSubClass("abc")
+    d = sub_import.sub_func(a, b)
+    e = sub_import.TheSubClass("abc")
     return c
 

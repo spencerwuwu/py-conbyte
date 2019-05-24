@@ -1,3 +1,3 @@
-# byte-concolic
+# py-conbyte 
 
-./byte-concolic.py -s simple targets/simple.py
+./py-conbyte.py -s simple targets/simple.py
