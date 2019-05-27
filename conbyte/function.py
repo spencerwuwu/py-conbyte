@@ -1,9 +1,9 @@
-
 import dis
 
 class Function:
     def __init__(self, obj):
         self.obj = obj
+        self.name = obj.__name__
         self.instructions = []
         for instruct in dis.get_instructions(obj):
             self.instructions.append(instruct)
@@ -27,8 +27,3 @@ class Function:
             i += 1
         return instructs
 
-    def get_obj(self):
-        return self.obj
-
-    def get_name(self):
-        return self.obj.__name__

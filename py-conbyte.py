@@ -8,10 +8,11 @@ import inspect
 from optparse import OptionParser
 from optparse import OptionGroup
 
-from symbolic.depend import *
+from conbyte.function import *
+from conbyte.explore import *
 
 TRACE_INTO = []
-func = ""
+FUNCTIONS = dict()
 
 def print_inst(obj):
     lines = dis.get_instructions(obj)
@@ -40,7 +41,10 @@ def get_members(target_module):
             print("function ", name)
             #dis.dis(obj)
             # print_inst(obj)
-            return Function(obj)
+            global TRACE_INTO
+            TRACE_INTO.append(name)
+            global FUNCTIONS
+            FUNCTIONS[name] = Function(obj)
 
 def trace_lines(frame, event, arg):
     if event != 'line':
@@ -51,7 +55,7 @@ def trace_lines(frame, event, arg):
     filename = co.co_filename
     print('%s line %s' % (func_name, line_no))
 
-    for line in func.get_instruct_by_line(line_no):
+    for line in FUNCTIONS[func_name].get_instruct_by_line(line_no):
         print("\t", line)
 
 def trace_calls(frame, event, arg):
@@ -61,6 +65,24 @@ def trace_calls(frame, event, arg):
     func_name = co.co_name
     if func_name in TRACE_INTO:
         # Trace into this function
+        print("global")
+        for g_name in frame.f_globals:
+            if "__doc__" in g_name:
+                continue
+            if "__builtins__" in g_name:
+                continue
+            print(g_name,":",frame.f_globals[g_name])
+        print()
+        print()
+        print("locals")
+        for g_name in frame.f_locals:
+            if "__doc__" in g_name:
+                continue
+            if "__builtins__" in g_name:
+                continue
+            print(g_name,":",frame.f_locals[g_name])
+        print()
+        print()
         return trace_lines
 
 
@@ -83,20 +105,11 @@ def main():
 
     base_name = os.path.basename(args[0])
     filename = os.path.abspath(args[0])
-    print(filename)
-    sys.path.append(filename.replace(base_name, ""))
-    new_model = __import__(options.entry)
-    # TEMP: dis.dis(new_model)
+    path = filename.replace(base_name, "")
+    module = base_name.replace(".py", "")
+    engine = ExplorationEngine(path, filename, module)
 
-    global func
-    func = get_members(new_model)
-    execute = func.get_obj()
-    global TRACE_INTO
-    TRACE_INTO = [func.get_name()]
-    sys.settrace(trace_calls)
-    print(execute(1,2))
-    sys.settrace(None)
-    # TEMP: clsmembers = inspect.getmembers(sys.modules[__name__], inspect.isclass)
+    engine.one_execution(options.entry)
     
 
 if __name__ == '__main__':
