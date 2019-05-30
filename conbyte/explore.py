@@ -3,10 +3,8 @@ import os
 import logging
 import dis
 import inspect
-from queue import PriorityQueue
 
 from conbyte.utils import * 
-from conbyte.module import * 
 from conbyte.function import *
 from conbyte.frame import *
 
@@ -24,28 +22,26 @@ class ExplorationEngine:
         target_module = __import__(module)
 
         self.functions = dict()
-        ped = " "
-        # self.get_members(target_module, ped)
+        self.trace_into = []
+        self.get_members(target_module)
+        self.trace_into.append("__init__")
+        self.trace_into.append("__str__")
 
-        self.root_module = Module(target_module, ped)
-
-        self.trace_into = self.root_module.get_func_names()
-
-        dis.dis(target_module)
+        #dis.dis(target_module)
 
         self.call_stack = Stack()
+        self.namespace_stack = Stack()
+
 
         """
         # Append builtin in trace_into
-        self.trace_into.append("__init__")
-        self.trace_into.append("__str__")
         """
 
 
     # TODO: Complete all types
-    def get_members(self, target_module, ped):
-        ped = ped + " "
+    def get_members(self, target_module):
         for name, obj in inspect.getmembers(target_module):
+            """
             if inspect.ismodule(obj):
                 print(ped + "module", name)
                 self.get_members(obj, ped)
@@ -61,47 +57,62 @@ class ExplorationEngine:
                 print(ped + "method", name)
                 #dis.dis(obj)
                 # print_inst(obj)
+            """
             if inspect.isfunction(obj):
-                print(ped + "function ", name)
+                print("function ", name)
                 #dis.dis(obj)
                 # print_inst(obj)
                 self.trace_into.append(name)
                 self.functions[name] = Function(obj)
 
-    def trace_return(self, frame, event, arg):
-        self.call_stack.pop()
+    def get_line_instructions(self, lineno, instructions):
+        instructs = []
+        start_record = False
+        i = 0
+        for instruct in instructions:
+            if start_record:
+                if instruct.starts_line == None:
+                    instructs.append(instruct)
+                else:
+                    break
+            else:
+                if instruct.starts_line != None:
+                    if instruct.starts_line == lineno:
+                        start_record = True
+                        instructs.append(instruct)
+            i += 1
+        return instructs
+
+    def execute_frame(self):
+        if self.call_stack.is_empty():
+            return
+        self.call_stack.top().execute_instructs()
         return
 
 
     def trace_lines(self, frame, event, arg):
-        if event == 'return':
-            return self.trace_return
 
-        if event != 'line':
+        if event != 'line' and event != 'return':
             return
 
+        c_frame = self.call_stack.top()
         co = frame.f_code
         func_name = co.co_name
         line_no = frame.f_lineno
         filename = co.co_filename
         print('%s line %s' % (func_name, line_no))
+        instructions = self.get_line_instructions(line_no, dis.get_instructions(co))
 
-        """
-        for line in self.functions[func_name].get_instruct_by_line(line_no):
-            print("\t", line)
+        for line in instructions:
+            c_frame.instructions.push(line)
+            print("push", line)
 
-        #self.call_stack.pop()
-        print("locals")
-        for g_name in frame.f_locals:
-            if "__doc__" in g_name:
-                continue
-            if "__builtins__" in g_name:
-                continue
-            print(g_name,":",frame.f_locals[g_name])
-        print()
-        print()
-        """
+        self.execute_frame()
 
+        if event == 'return':
+            print("Return")
+            self.call_stack.pop()
+            self.execute_frame()
 
     def trace_calls(self, frame, event, arg):
         if event != 'call':
@@ -111,11 +122,12 @@ class ExplorationEngine:
         if func_name in self.trace_into:
             # Trace into this function
             current_frame = Frame(frame)
+            # current_frame.set_local()
             self.call_stack.push(current_frame)
             return self.trace_lines
 
     def one_execution(self, entry):
-        execute = self.root_module.functions[entry].obj
+        execute = self.functions[entry].obj
         sys.settrace(self.trace_calls)
         print(execute(1,2))
         sys.settrace(None)

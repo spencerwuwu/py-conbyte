@@ -1,5 +1,5 @@
-#import sub_import
-#from d_import import *
+import sub_import
+from d_import import *
 
 glo = 0
 
@@ -30,19 +30,18 @@ def add(a, b):
 
 
 def simple(a, b):
+    e = sub_import.TheSubClass("abc")
     c = add(a, b)
+    d = sub_import.sub_func(a, b) + sub_import.sub_func(a, b)
     """
     a = a + b
-    d = sub_import.sub_func(a, b) + sub_import.sub_func(a, b)
-    e = sub_import.TheSubClass("abc")
 
     global glo
     glo = 2
     """
 
-    #f = TheDClass("def")
+    f = TheDClass("def")
     f = TheClass("def")
-    print(f.get())
-    print(f)
+    f.get()
     return 0
 

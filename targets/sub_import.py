@@ -11,4 +11,5 @@ class TheSubClass:
         return self.value
 
 def sub_func(a, b):
+    a = a + 1
     return a
