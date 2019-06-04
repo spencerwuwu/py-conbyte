@@ -4,9 +4,14 @@ import logging
 import dis
 import inspect
 
-from conbyte.utils import * 
-from conbyte.function import *
-from conbyte.frame import *
+from .utils import * 
+from .function import *
+from .frame import *
+from .executor import *
+from .path_to_constraint import *
+
+from .concolic_types import concolic_type
+from .z3_wrapper import Z3Wrapper
 
 
 def print_inst(obj):
@@ -16,27 +21,37 @@ def print_inst(obj):
 
 class ExplorationEngine:
 
-    def __init__(self, path, filename, module):
+    def __init__(self, path, filename, module, entry):
         # Set up import environment
         sys.path.append(path)
         target_module = __import__(module)
+        self.entry = entry
 
-        self.functions = dict()
         self.trace_into = []
+        self.functions = dict()
         self.get_members(target_module)
-        self.trace_into.append("__init__")
-        self.trace_into.append("__str__")
+        self.z3_wrapper = Z3Wrapper()
+
+        self.symbolic_inputs = None 
+        self.new_constraints = []
+        self.constraints_to_solve = Queue()
 
         #dis.dis(target_module)
 
         self.call_stack = Stack()
-        self.namespace_stack = Stack()
+        self.mem_stack = Stack()
 
+        self.path = PathToConstraint(lambda c: self.add_constraint(c))
+        self.executor = Executor(self.path)
 
         """
         # Append builtin in trace_into
         """
+        self.trace_into.append("__init__")
+        self.trace_into.append("__str__")
 
+    def add_constraint(self, constraint):
+        self.new_constraints.append(constraint)
 
     # TODO: Complete all types
     def get_members(self, target_module):
@@ -59,11 +74,32 @@ class ExplorationEngine:
                 # print_inst(obj)
             """
             if inspect.isfunction(obj):
-                print("function ", name)
-                #dis.dis(obj)
+                # print("function ", name)
+                # dis.dis(obj)
                 # print_inst(obj)
                 self.trace_into.append(name)
                 self.functions[name] = Function(obj)
+
+    def execute_instructs(self, frame):
+        instructs = frame.instructions
+        while not instructs.is_empty():
+            instruct = instructs.pop()
+            # print(" instr", instruct.opname, instruct.argval, instruct.argrepr)
+            if instruct.opname == "CALL_FUNCTION":
+                return
+            elif instruct.opname == "CALL_METHOD":
+                return
+            else:
+                re = self.executor.execute_instr(self.call_stack, instruct)
+
+    def execute_frame(self):
+        if self.call_stack.is_empty():
+            return
+        current_frame = self.call_stack.top()
+        self.execute_instructs(current_frame)
+        # print("")
+        return
+
 
     def get_line_instructions(self, lineno, instructions):
         instructs = []
@@ -83,13 +119,6 @@ class ExplorationEngine:
             i += 1
         return instructs
 
-    def execute_frame(self):
-        if self.call_stack.is_empty():
-            return
-        self.call_stack.top().execute_instructs()
-        return
-
-
     def trace_lines(self, frame, event, arg):
 
         if event != 'line' and event != 'return':
@@ -100,17 +129,17 @@ class ExplorationEngine:
         func_name = co.co_name
         line_no = frame.f_lineno
         filename = co.co_filename
-        print('%s line %s' % (func_name, line_no))
+        # print('%s line %s' % (func_name, line_no))
         instructions = self.get_line_instructions(line_no, dis.get_instructions(co))
 
-        for line in instructions:
-            c_frame.instructions.push(line)
-            print("push", line)
+        for instruct in instructions:
+            c_frame.instructions.push(instruct)
+            # print(" push", instruct.opname, instruct.argval, instruct.argrepr)
 
         self.execute_frame()
 
         if event == 'return':
-            print("Return")
+            # print("Return")
             self.call_stack.pop()
             self.execute_frame()
 
@@ -121,13 +150,39 @@ class ExplorationEngine:
         func_name = co.co_name
         if func_name in self.trace_into:
             # Trace into this function
-            current_frame = Frame(frame)
+            current_frame = Frame(frame, self.mem_stack)
+            if not self.call_stack.is_empty():
+                current_frame.set_locals(self.call_stack.top().mem_stack)
+            else:
+                self.symbolic_inputs = current_frame.init_locals()
+                self.z3_wrapper.set_variables(self.symbolic_inputs)
             # current_frame.set_local()
             self.call_stack.push(current_frame)
             return self.trace_lines
 
-    def one_execution(self, entry):
-        execute = self.functions[entry].obj
+    def explore(self):
+        self._one_execution()
+        self._recordInputs()
+
+    def _getInputs(self):
+        return self.symbolic_inputs.copy()
+
+    def _recordInputs(self):
+        self.symbolic_inputs
+
+    def _one_execution(self, expected_path=None):
+        execute = self.functions[self.entry].obj
+
+        self.path.reset(expected_path)
+
         sys.settrace(self.trace_calls)
-        print(execute(1,2))
+        execute(1,2)
         sys.settrace(None)
+
+        while len(self.new_constraints) > 0:
+            constraint = self.new_constraints.pop()
+            constraint.inputs = self._getInputs()
+            self.constraints_to_solve.push(constraint)
+
+        # asserts, query = self.new_constraints[0].get_asserts_and_query()
+        #self.z3_wrapper.find_counter_example(asserts, query)

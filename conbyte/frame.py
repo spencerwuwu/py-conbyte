@@ -1,8 +1,10 @@
-from conbyte.utils import * 
+from .utils import * 
+from .concolic_types.concolic_type import * 
+from .concolic_types.concolic_int import * 
 
 class Frame:
-    def __init__(self, frame):
-        print("New Frame")
+    def __init__(self, frame, mem_stack):
+        # print("New Frame")
         """
         print("locals")
         for g_name in frame.f_locals:
@@ -13,7 +15,8 @@ class Frame:
         self.globals = frame.f_globals
         self.locals = frame.f_locals
         self.instructions = Queue()
-        self.data_stack = Stack()
+        self.variables = dict()
+        self.mem_stack = mem_stack
         """
         print("global")
         for g_name in frame.f_globals:
@@ -25,19 +28,26 @@ class Frame:
         print()
         print()
         """
-    def set_local(self):
+    def init_locals(self):
+        symbolic_inputs = dict()
         for local in self.locals:
             if local != "self":
-                print(local)
+                local_value = self.locals[local]
+                # print(" local:", local, local_value)
+                if isinstance(local_value, int):
+                    concolic_var = ConcolicInteger(local, local_value)
+                    symbolic_inputs[local] = "Int"
+                elif isinstance(load_value, str):
+                    concolic_var = ConcolicString(local, local_value)
+                    symbolic_inputs[local] = "String"
+                self.variables[local] = concolic_var
+        return symbolic_inputs
 
+    def set_locals(self, mem_stack):
+        for local in self.locals:
+            if local != "self":
+                # print(" local:", local)
+                var = mem_stack.pop()
+                self.variables[local] = var
 
-    def execute_instructs(self):
-        instructs = self.instructions
-        while not instructs.is_empty():
-            instruct = instructs.pop()
-            print("instr",instruct)
-            if instruct.opname == "CALL_FUNCTION":
-                return
-            else:
-                continue
 

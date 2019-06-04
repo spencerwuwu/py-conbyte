@@ -1,8 +1,6 @@
 import sub_import
 from d_import import *
 
-glo = 0
-
 class TheClassB:
     def __init__(self, value:str):
         self.value = value
@@ -30,18 +28,22 @@ def add(a, b):
 
 
 def simple(a, b):
-    e = sub_import.TheSubClass("abc")
-    c = add(a, b)
-    d = sub_import.sub_func(a, b) + sub_import.sub_func(a, b)
+    a = a + 2 + b
+    if a > 5:
+        c = add(a, b)
+    else:
+        c = 3
+    d = "abc"
     """
-    a = a + b
 
     global glo
     glo = 2
-    """
 
+    d = sub_import.sub_func(a, b) + sub_import.sub_func(a, b)
+    e = sub_import.TheSubClass("abc")
     f = TheDClass("def")
     f = TheClass("def")
     f.get()
-    return 0
+    """
+    return c
 

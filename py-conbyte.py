@@ -107,9 +107,9 @@ def main():
     filename = os.path.abspath(args[0])
     path = filename.replace(base_name, "")
     module = base_name.replace(".py", "")
-    engine = ExplorationEngine(path, filename, module)
+    engine = ExplorationEngine(path, filename, module, options.entry)
 
-    engine.one_execution(options.entry)
+    engine.explore()
     
 
 if __name__ == '__main__':
