@@ -161,7 +161,13 @@ class ExplorationEngine:
             return self.trace_lines
 
     def explore(self):
-        self._one_execution()
+        execute = self.functions[self.entry].obj
+        var_n = execute.__code__.co_argcount
+        init_vars = dict()
+        for i in range(var_n):
+            print(i)
+            init_vars["in" + str(i)] = 0
+        self._one_execution(init_vars)
         self._recordInputs()
 
     def _getInputs(self):
@@ -170,13 +176,13 @@ class ExplorationEngine:
     def _recordInputs(self):
         self.symbolic_inputs
 
-    def _one_execution(self, expected_path=None):
-        execute = self.functions[self.entry].obj
+    def _one_execution(self, init_vars, expected_path=None):
 
         self.path.reset(expected_path)
 
+        execute = self.functions[self.entry].obj
         sys.settrace(self.trace_calls)
-        execute(1,2)
+        execute(**init_vars)
         sys.settrace(None)
 
         while len(self.new_constraints) > 0:
