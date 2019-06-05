@@ -1,10 +1,13 @@
+# Copyright: see copyright.txt
 
+import inspect
+import functools
 
 class ConcolicType(object):
     def __init__(self, expr=None, value=None):
         self.expr = expr
         self.value = value
-        print("  expr:", expr)
+        print("  Type expr:", expr)
 
     def get_concrete(self):
         return self.value
@@ -14,17 +17,17 @@ class ConcolicType(object):
         val_l = self.value
         val_r = other.value
         if operator is "==":
-            value = lambda val_l, val_r: val_l == val_r
+            value = val_l == val_r
         if operator is "!=":
-            value = lambda val_l, val_r: val_l != val_r
+            value = val_l != val_r
         elif operator is ">":
-            value = lambda val_l, val_r: val_l > val_r
+            value = val_l > val_r
         elif operator is "<":
-            value = lambda val_l, val_r: val_l < val_r
+            value = val_l < val_r
         elif operator is ">=":
-            value = lambda val_l, val_r: val_l >= val_r
+            value = val_l >= val_r
         elif operator is "<=":
-            value = lambda val_l, val_r: val_l <= val_r
+            value = val_l <= val_r
         else:
             return None
 

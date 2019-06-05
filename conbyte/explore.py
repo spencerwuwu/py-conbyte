@@ -35,6 +35,9 @@ class ExplorationEngine:
         self.symbolic_inputs = None 
         self.new_constraints = []
         self.constraints_to_solve = Queue()
+        self.solved_constraints = Queue()
+        self.finished_constraints = []
+        self.num_processed_constraints = 0
 
         #dis.dis(target_module)
 
@@ -160,29 +163,70 @@ class ExplorationEngine:
             self.call_stack.push(current_frame)
             return self.trace_lines
 
-    def explore(self):
+    def _is_exploration_complete(self):
+        num_constr = self.constraints_to_solve.q_size()
+        if num_constr == 0 and self.solved_constraints.is_empty():
+            return True
+        else:
+            return False
+
+    def explore(self, max_iterations=0, timeout=None):
+        # TODO: Initialize arguments
         execute = self.functions[self.entry].obj
         var_n = execute.__code__.co_argcount
-        init_vars = dict()
+        init_vars = [] 
         for i in range(var_n):
-            print(i)
-            init_vars["in" + str(i)] = 0
+            init_vars.append(i)
+
+        # First Execution
         self._one_execution(init_vars)
-        self._recordInputs()
+        iterations = 1
+
+        # TODO: Currently single thread
+        while not self._is_exploration_complete():
+            if max_iterations != 0 and iterations >= max_iterations:
+                break
+                
+            if not self.solved_constraints.is_empty():
+                selected_id, result, model = self.solved_constraints.pop()
+
+                if selected_id in self.finished_constraints:
+                    continue
+
+                selected_constraint = self.path.find_constraint(selected_id)
+            else:
+                while not self.constraints_to_solve.is_empty():
+                    target = self.constraints_to_solve.pop()
+                    asserts, query = target.get_asserts_and_query()
+                    ret, model = self.z3_wrapper.find_counter_example(asserts, query)
+                    self.solved_constraints.push((target.id, ret, model))
+                continue
+
+            if model is not None:
+                args = self._recordInputs(model)
+                self._one_execution(args, selected_constraint)
+                iterations += 1
+                self.num_processed_constraints += 1
+            self.finished_constraints.append(selected_id)
 
     def _getInputs(self):
         return self.symbolic_inputs.copy()
 
-    def _recordInputs(self):
-        self.symbolic_inputs
+    def _recordInputs(self, model):
+        args = []
+        for name, value in model.items():
+            args.append(value)
+        return args
+
 
     def _one_execution(self, init_vars, expected_path=None):
+        print("Inputs: " + str(init_vars))
 
         self.path.reset(expected_path)
 
         execute = self.functions[self.entry].obj
         sys.settrace(self.trace_calls)
-        execute(**init_vars)
+        execute(*init_vars)
         sys.settrace(None)
 
         while len(self.new_constraints) > 0:
@@ -190,5 +234,3 @@ class ExplorationEngine:
             constraint.inputs = self._getInputs()
             self.constraints_to_solve.push(constraint)
 
-        # asserts, query = self.new_constraints[0].get_asserts_and_query()
-        #self.z3_wrapper.find_counter_example(asserts, query)

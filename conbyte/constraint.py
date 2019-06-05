@@ -53,6 +53,7 @@ class Constraint(object):
     def find_child(self, predicate):
         for c in self.children:
             if predicate == c.predicate:
+                print(c.predicate)
                 return c
         return None
 

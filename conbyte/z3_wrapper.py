@@ -25,12 +25,14 @@ class Z3Wrapper(object):
         start_time = time.process_time()
         if timeout is not None:
             self.options["timeout"] = "-T:" + str(timeout)
+        else:
+            self.options["timeout"] = "-T:15"
         self.asserts = asserts
         self.query = query
         result, model = self._find_model()
         endtime = time.process_time()
-        solvertime = endtime - start_time
-        return result, model, solvertime
+        solve_time = endtime - start_time
+        return result, model
 
     def _find_model(self):
         z3_cmd = "z3"
@@ -65,8 +67,15 @@ class Z3Wrapper(object):
     def _get_model(self, models):
         model = dict()
         for line in models:
-            name, value = line.replace("((", "").replace("))", "").split(" ")
-            model[name] = value
+            name, value = line.replace("((", "").replace("))", "").split(" ", 1)
+            if self.variables[name] is "Int":
+                if "(" in value:
+                    value = value.replace("(", "").replace(")", "").split(" ")[1]
+                    model[name] = -int(value)
+                else:
+                    model[name] = int(value)
+            else:
+                model[name] = value
         return model
 
 
@@ -84,9 +93,7 @@ $getvars
         assignments['declarevars'] = "\n".join(
             "(declare-fun {} () {})".format(name, var) for name, var in self.variables.items())
 
-        assignments['query'] = "\n".join(
-            "(declare-fun {} () {})".format(assertions.get_formula()) for assertion in self.asserts)
-
+        assignments['query'] = "\n".join(assertion.get_formula() for assertion in self.asserts)
         assignments['query'] += self.query.get_formula()
 
         assignments['getvars'] = "\n".join("(get-value ({}))".format(name) for name in self.variables)

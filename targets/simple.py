@@ -28,9 +28,13 @@ def add(a, b):
 
 
 def simple(a, b):
-    a = a + 2 + b
+    a = a - 2
     if a > 5:
         c = add(a, b)
+        if c > 100:
+            return 0
+        else:
+            return 1
     else:
         c = 3
     d = "abc"

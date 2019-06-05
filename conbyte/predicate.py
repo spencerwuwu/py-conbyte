@@ -13,6 +13,9 @@ class Predicate:
     def __eq__(self, other):
         if isinstance(other, Predicate):
             res = self.result == other.result and self.concolic.symbolic_eq(other.concolic)
+            return res
+        else:
+            return False
 
     def get_formula(self):
         expr = self.concolic.expr
@@ -29,3 +32,6 @@ class Predicate:
             return "(" + expr[0] + " " + operand + " " + comparand + ")"
         else:
             return str(expr)
+
+    def __str__(self):
+        return "Result: %s\nExpr: %s" % (self.result, self.concolic.expr)
