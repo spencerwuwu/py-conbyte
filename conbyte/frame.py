@@ -1,6 +1,8 @@
 from .utils import * 
 from .concolic_types.concolic_type import * 
 from .concolic_types.concolic_int import * 
+from .concolic_types.concolic_str import * 
+from .concolic_types.concolic_object import * 
 
 class Frame:
     def __init__(self, frame, mem_stack):
@@ -37,8 +39,8 @@ class Frame:
                 if isinstance(local_value, int):
                     concolic_var = ConcolicInteger(local, local_value)
                     symbolic_inputs[local] = "Int"
-                elif isinstance(load_value, str):
-                    concolic_var = ConcolicString(local, local_value)
+                elif isinstance(local_value, str):
+                    concolic_var = ConcolicStr(local, local_value)
                     symbolic_inputs[local] = "String"
                 self.variables[local] = concolic_var
         return symbolic_inputs
@@ -49,5 +51,6 @@ class Frame:
                 # print(" local:", local)
                 var = mem_stack.pop()
                 self.variables[local] = var
-
+            else:
+                self.variables[local] = ConcolicObject()
 

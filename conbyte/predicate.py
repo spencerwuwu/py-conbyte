@@ -27,9 +27,10 @@ class Predicate:
 
     def _get_formula(self, expr):
         if isinstance(expr, list):
-            operand = self._get_formula(expr[1])
-            comparand = self._get_formula(expr[2])
-            return "(" + expr[0] + " " + operand + " " + comparand + ")"
+            formula = "( "
+            for exp in expr:
+                formula += self._get_formula(exp) + " "
+            return formula + " )"
         else:
             return str(expr)
 

@@ -10,6 +10,7 @@ from optparse import OptionGroup
 
 from conbyte.function import *
 from conbyte.explore import *
+from entry_point import *
 
 TRACE_INTO = []
 FUNCTIONS = dict()
@@ -107,7 +108,7 @@ def main():
     filename = os.path.abspath(args[0])
     path = filename.replace(base_name, "")
     module = base_name.replace(".py", "")
-    engine = ExplorationEngine(path, filename, module, options.entry)
+    engine = ExplorationEngine(path, filename, module, options.entry, INI_ARGS)
 
     engine.explore()
     

@@ -47,3 +47,8 @@ class ConcolicType(object):
         else:
             return expr1 == expr2
 
+    def __eq__(self, other):
+        if self.value != other.value:
+            return False
+        else:
+            return self.eq_worker(self.expr, other.expr)

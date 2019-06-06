@@ -21,7 +21,7 @@ def print_inst(obj):
 
 class ExplorationEngine:
 
-    def __init__(self, path, filename, module, entry):
+    def __init__(self, path, filename, module, entry, ini_vars):
         # Set up import environment
         sys.path.append(path)
         target_module = __import__(module)
@@ -32,6 +32,7 @@ class ExplorationEngine:
         self.get_members(target_module)
         self.z3_wrapper = Z3Wrapper()
 
+        self.ini_vars = ini_vars
         self.symbolic_inputs = None 
         self.new_constraints = []
         self.constraints_to_solve = Queue()
@@ -61,21 +62,23 @@ class ExplorationEngine:
         for name, obj in inspect.getmembers(target_module):
             """
             if inspect.ismodule(obj):
-                print(ped + "module", name)
-                self.get_members(obj, ped)
+                print("module", name)
+                self.get_members(obj)
+            """
 
             if inspect.isclass(obj):
-                print(ped + "class", name)
+                print("class", name)
+                """
                 for name_o, obj_o in inspect.getmembers(obj):
                     if inspect.isfunction(obj_o):
-                        print(ped + "function ", name_o)
+                        print( "function ", name_o)
                         #print_inst(obj_o)
-                #dis.dis(obj)
+                """
+                dis.dis(obj)
             if inspect.ismethod(obj):
-                print(ped + "method", name)
+                print("method", name)
                 #dis.dis(obj)
                 # print_inst(obj)
-            """
             if inspect.isfunction(obj):
                 # print("function ", name)
                 # dis.dis(obj)
@@ -87,7 +90,7 @@ class ExplorationEngine:
         instructs = frame.instructions
         while not instructs.is_empty():
             instruct = instructs.pop()
-            # print(" instr", instruct.opname, instruct.argval, instruct.argrepr)
+            print(" instr", instruct.opname, instruct.argval)
             if instruct.opname == "CALL_FUNCTION":
                 return
             elif instruct.opname == "CALL_METHOD":
@@ -132,7 +135,7 @@ class ExplorationEngine:
         func_name = co.co_name
         line_no = frame.f_lineno
         filename = co.co_filename
-        # print('%s line %s' % (func_name, line_no))
+        print('%s line %s' % (func_name, line_no))
         instructions = self.get_line_instructions(line_no, dis.get_instructions(co))
 
         for instruct in instructions:
@@ -151,17 +154,17 @@ class ExplorationEngine:
             return
         co = frame.f_code
         func_name = co.co_name
-        if func_name in self.trace_into:
+        # if func_name in self.trace_into:
             # Trace into this function
-            current_frame = Frame(frame, self.mem_stack)
-            if not self.call_stack.is_empty():
-                current_frame.set_locals(self.call_stack.top().mem_stack)
-            else:
-                self.symbolic_inputs = current_frame.init_locals()
-                self.z3_wrapper.set_variables(self.symbolic_inputs)
-            # current_frame.set_local()
-            self.call_stack.push(current_frame)
-            return self.trace_lines
+        current_frame = Frame(frame, self.mem_stack)
+        if not self.call_stack.is_empty():
+            current_frame.set_locals(self.call_stack.top().mem_stack)
+        else:
+            self.symbolic_inputs = current_frame.init_locals()
+            self.z3_wrapper.set_variables(self.symbolic_inputs)
+        # current_frame.set_local()
+        self.call_stack.push(current_frame)
+        return self.trace_lines
 
     def _is_exploration_complete(self):
         num_constr = self.constraints_to_solve.q_size()
@@ -171,15 +174,8 @@ class ExplorationEngine:
             return False
 
     def explore(self, max_iterations=0, timeout=None):
-        # TODO: Initialize arguments
-        execute = self.functions[self.entry].obj
-        var_n = execute.__code__.co_argcount
-        init_vars = [] 
-        for i in range(var_n):
-            init_vars.append(i)
-
         # First Execution
-        self._one_execution(init_vars)
+        self._one_execution(self.ini_vars)
         iterations = 1
 
         # TODO: Currently single thread
@@ -225,6 +221,7 @@ class ExplorationEngine:
         self.path.reset(expected_path)
 
         execute = self.functions[self.entry].obj
+        dis.dis(execute)
         sys.settrace(self.trace_calls)
         execute(*init_vars)
         sys.settrace(None)
