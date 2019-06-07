@@ -17,7 +17,7 @@ class ConcolicInteger(ConcolicType):
         return self.value
 
     def __str__(self):
-        return str(self.value)
+        return "{ConInt, value: %s, expr: %s)" % (self.value, self.expr)
 
 ops = [("add", "+", "+"),
        ("sub", "-", "-"),

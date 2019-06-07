@@ -8,7 +8,7 @@ class Predicate:
     def negate(self):
         """Negates the current predicate"""
         assert (self.result is not None)
-        self.result = not self.result
+        return Predicate(self.concolic, not self.result)
 
     def __eq__(self, other):
         if isinstance(other, Predicate):
@@ -35,4 +35,4 @@ class Predicate:
             return str(expr)
 
     def __str__(self):
-        return "Result: %s\nExpr: %s" % (self.result, self.concolic.expr)
+        return "Result: %s\tExpr: %s" % (self.result, self.concolic.expr)

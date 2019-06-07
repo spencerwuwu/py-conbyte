@@ -14,16 +14,24 @@ class TheClassB:
         return self.value
 """
 
+class InnerClass:
+    def __init__(self, a):
+        self.ia = a
+
+    def __str__(self):
+        return str(self.ia)
+
 class TheClass:
     def __init__(self, a, b):
         self.sa = a
         self.sb = b
+        self.inner = InnerClass(a)
 
     def __str__(self):
-        return self.value
+        return "%s %s" % (self.sa, self.sb)
 
     def add(self):
-        return self.a + self.b
+        return self.sa + self.sb
 
 def add(a, b):
     c = a + b
@@ -31,10 +39,13 @@ def add(a, b):
 
 
 def simple(a, b):
+    f = TheClass(a, b)
+    c = f.add()
     """
     a = a * 2
     if a > 5:
         c = add(a, b)
+        #c = a + b
         if c > 100:
             return 0
         else:
@@ -42,8 +53,6 @@ def simple(a, b):
     else:
         c = 3
     """
-    f = TheClass(a, b)
-    c = f.add()
     """
     global glo
     glo = 2

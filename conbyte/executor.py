@@ -2,12 +2,13 @@ from .utils import *
 from .concolic_types.concolic_type import * 
 from .concolic_types.concolic_int import * 
 from .concolic_types.concolic_str import * 
+from .concolic_types.concolic_object import * 
 
 class Executor:
     def __init__(self, path):
         self.path = path
 
-    def execute_instr(self, call_stack, instruct):
+    def execute_instr(self, call_stack, instruct, func_name=None):
         c_frame = call_stack.top()
         mem_stack = c_frame.mem_stack
         variables = c_frame.variables
@@ -115,6 +116,7 @@ class Executor:
             return
 
         elif instruct.opname is "CALL_FUNCTION":
+            # Will not enter
             return
 
         elif instruct.opname is "LOAD_CONST":
@@ -130,12 +132,34 @@ class Executor:
 
         elif instruct.opname is "LOAD_FAST":
             load_name = instruct.argval
-            mem_stack.push(variables[load_name])
+            load_var = variables[load_name]
+            mem_stack.push(load_var)
+
+        elif instruct.opname is "LOAD_ATTR":
+            load_name = instruct.argval
+            object_var = mem_stack.pop() 
+            if object_var.has_attr(load_name):
+                load_attr = object_var.get_attr(load_name)
+                mem_stack.push(load_attr)
+            else:
+                # Probally is calling a function
+                # Store the object back, passing to the function as self
+                mem_stack.push(object_var)
+
+        elif instruct.opname is "RETURN_VALUE":
+            ret_value = mem_stack.pop()
+            if ret_value is None or ret_value is 0:
+                if func_name is "__init__":
+                    ret_value = variables["self"]
+            mem_stack.push(ret_value)
+            print("Return: ", ret_value)
+            return True
 
         elif instruct.opname is "STORE_FAST":
             store_name = instruct.argval
-            variables[store_name] = mem_stack.pop() 
-            print(variables[store_name])
+            var = mem_stack.pop() 
+            variables[store_name] = var
+            print("Store:", var)
 
         elif instruct.opname is "STORE_ATTR":
             attr_name = instruct.argval

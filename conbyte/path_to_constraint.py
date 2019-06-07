@@ -25,13 +25,14 @@ class PathToConstraint:
     def which_branch(self, concolic_type):
         p = Predicate(concolic_type, concolic_type.value)
         c = self.current_constraint.find_child(p)
-        p.negate()
+        pneg = p.negate()
         cneg = self.current_constraint.find_child(p)
 
         if c is None:
             c = self.current_constraint.add_child(p)
+            cneg = self.current_constraint.add_child(pneg)
             # we add the new constraint to the queue of the engine for later processing
-            self.add(c)
+            self.add(cneg)
 
         self.current_constraint = c
 

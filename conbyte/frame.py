@@ -19,6 +19,7 @@ class Frame:
         self.instructions = Queue()
         self.variables = dict()
         self.mem_stack = mem_stack
+        self.enter_object = None
         """
         print("global")
         for g_name in frame.f_globals:
@@ -45,12 +46,16 @@ class Frame:
                 self.variables[local] = concolic_var
         return symbolic_inputs
 
-    def set_locals(self, mem_stack):
+    def set_locals(self, mem_stack, is_init_object):
         for local in self.locals:
+            print("   local:", local)
             if local != "self":
-                # print(" local:", local)
                 var = mem_stack.pop()
                 self.variables[local] = var
             else:
-                self.variables[local] = ConcolicObject()
+                if is_init_object:
+                    self.variables[local] = ConcolicObject()
+                else:
+                    var = mem_stack.pop()
+                    self.variables[local] = var
 

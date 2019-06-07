@@ -21,6 +21,10 @@ class Stack:
         else:
             return True
 
+    def sanitize(self):
+        while not self.is_empty():
+            self.pop()
+
 class Queue:
     def __init__(self):
         self.queue = []
@@ -42,3 +46,7 @@ class Queue:
             return False
         else:
             return True
+
+    def sanitize(self):
+        while not self.is_empty():
+            self.pop()

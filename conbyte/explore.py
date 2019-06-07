@@ -85,26 +85,26 @@ class ExplorationEngine:
                 # print_inst(obj)
                 self.trace_into.append(name)
                 self.functions[name] = Function(obj)
+                dis.dis(obj)
 
-    def execute_instructs(self, frame):
+    def execute_instructs(self, frame, func_name=None):
         instructs = frame.instructions
         while not instructs.is_empty():
             instruct = instructs.pop()
-            print(" instr", instruct.opname, instruct.argval)
+            print(" instr", instruct.opname, instruct.argval, instruct.argrepr)
             if instruct.opname == "CALL_FUNCTION":
                 return
             elif instruct.opname == "CALL_METHOD":
                 return
             else:
-                re = self.executor.execute_instr(self.call_stack, instruct)
+                re = self.executor.execute_instr(self.call_stack, instruct, func_name)
+        return re
 
-    def execute_frame(self):
+    def execute_frame(self, func_name=None):
         if self.call_stack.is_empty():
             return
         current_frame = self.call_stack.top()
-        self.execute_instructs(current_frame)
-        # print("")
-        return
+        return self.execute_instructs(current_frame, func_name)
 
 
     def get_line_instructions(self, lineno, instructions):
@@ -127,7 +127,7 @@ class ExplorationEngine:
 
     def trace_lines(self, frame, event, arg):
 
-        if event != 'line' and event != 'return':
+        if event != 'line':
             return
 
         c_frame = self.call_stack.top()
@@ -140,14 +140,14 @@ class ExplorationEngine:
 
         for instruct in instructions:
             c_frame.instructions.push(instruct)
-            # print(" push", instruct.opname, instruct.argval, instruct.argrepr)
+            # print("   push", instruct.opname, instruct.argval, instruct.argrepr)
 
-        self.execute_frame()
+        is_return = self.execute_frame(func_name)
 
-        if event == 'return':
+        while is_return:
             # print("Return")
             self.call_stack.pop()
-            self.execute_frame()
+            is_return = self.execute_frame(func_name)
 
     def trace_calls(self, frame, event, arg):
         if event != 'call':
@@ -158,7 +158,10 @@ class ExplorationEngine:
             # Trace into this function
         current_frame = Frame(frame, self.mem_stack)
         if not self.call_stack.is_empty():
-            current_frame.set_locals(self.call_stack.top().mem_stack)
+            if func_name == "__init__":
+                current_frame.set_locals(self.call_stack.top().mem_stack, True)
+            else:
+                current_frame.set_locals(self.call_stack.top().mem_stack, False)
         else:
             self.symbolic_inputs = current_frame.init_locals()
             self.z3_wrapper.set_variables(self.symbolic_inputs)
@@ -212,16 +215,18 @@ class ExplorationEngine:
         args = []
         for name, value in model.items():
             args.append(value)
+        args.reverse()
         return args
 
 
     def _one_execution(self, init_vars, expected_path=None):
         print("Inputs: " + str(init_vars))
 
+        self.call_stack.sanitize()
+        self.mem_stack.sanitize()
         self.path.reset(expected_path)
 
         execute = self.functions[self.entry].obj
-        dis.dis(execute)
         sys.settrace(self.trace_calls)
         execute(*init_vars)
         sys.settrace(None)
