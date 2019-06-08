@@ -20,6 +20,13 @@ class InnerClass:
 
     def __str__(self):
         return str(self.ia)
+    
+    def compare_add(self, t):
+        if -self.ia < 2:
+            self.ia += t
+        else:
+            self.ia = t
+        return self.ia
 
 class TheClass:
     def __init__(self, a, b):
@@ -31,7 +38,7 @@ class TheClass:
         return "%s %s" % (self.sa, self.sb)
 
     def add(self):
-        return self.sa + self.sb
+        return self.sa + self.inner.compare_add(self.sb)
 
 def add(a, b):
     c = a + b

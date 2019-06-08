@@ -19,6 +19,10 @@ class ConcolicInteger(ConcolicType):
     def __str__(self):
         return "{ConInt, value: %s, expr: %s)" % (self.value, self.expr)
 
+    def negate(self):
+        self.value = -self.value
+        self.expr = ["-", 0, self.expr]
+
 ops = [("add", "+", "+"),
        ("sub", "-", "-"),
        ("mul", "*", "*"),

@@ -52,3 +52,8 @@ class ConcolicType(object):
             return False
         else:
             return self.eq_worker(self.expr, other.expr)
+
+    # For bool type
+    def negate(self):
+        self.value = not self.value
+        self.expr = ['not', self.expr]
