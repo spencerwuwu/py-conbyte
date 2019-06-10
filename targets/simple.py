@@ -38,7 +38,12 @@ class TheClass:
         return "%s %s" % (self.sa, self.sb)
 
     def add(self):
-        return self.sa + self.inner.compare_add(self.sb)
+        a = self.sa 
+        b = self.inner.compare_add(self.sb)
+        if b > 30:
+            return b
+        else:
+            return a
 
 def add(a, b):
     c = a + b
@@ -46,19 +51,21 @@ def add(a, b):
 
 
 def simple(a, b):
-    f = TheClass(a, b)
-    c = f.add()
-    """
-    a = a * 2
     if a > 5:
-        c = add(a, b)
-        #c = a + b
-        if c > 100:
+        c = a + b
+    else:
+        c = a - b
+    if c > 100:
+        if a > b:
             return 0
         else:
-            return 1
+            return 2
     else:
-        c = 3
+        return 1
+    """
+    f = TheClass(a, b)
+    c = f.add()
+    a = a * 2
     """
     """
     global glo
@@ -72,7 +79,8 @@ def simple(a, b):
     return c
 
 def add_string(a, b):
-    arr = [a, b]
-    c = a.split(",", 2)
+    arr = [a, b, "gg"]
+    c = arr[0]
+    # c = a.split(",", 2)[0]
     #d = c.split(",")[0]
     return c

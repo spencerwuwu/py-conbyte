@@ -3,11 +3,16 @@
 import inspect
 import functools
 
+import logging
+import sys
+
+log = logging.getLogger("ct.con.type")
+
 class ConcolicType(object):
     def __init__(self, expr=None, value=None):
         self.expr = expr
         self.value = value
-        print("  Type expr:", expr)
+        log.debug("  Type expr: %s" % expr)
 
     def get_concrete(self):
         return self.value

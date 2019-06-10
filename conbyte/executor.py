@@ -3,6 +3,7 @@ from .concolic_types.concolic_type import *
 from .concolic_types.concolic_int import * 
 from .concolic_types.concolic_str import * 
 from .concolic_types.concolic_object import * 
+from .concolic_types.concolic_list import * 
 
 class Executor:
     def __init__(self, path):
@@ -74,10 +75,12 @@ class Executor:
 
         elif instruct.opname is "GET_ITER":
             # TODO: 
+            log.warning("%s Not support" % instruct.opname)
             return
 
         elif instruct.opname is "GET_YIELD_FROM_ITER":
             # TODO: 
+            log.warning("%s Not support" % instruct.opname)
             return
         #
         # Binary operations
@@ -85,6 +88,7 @@ class Executor:
 
         elif instruct.opname is "BINARY_POWER":
             # TODO: 
+            log.warning("%s Not support" % instruct.opname)
             return
 
         elif instruct.opname is "BINARY_MULTIPLY":
@@ -95,6 +99,7 @@ class Executor:
 
         elif instruct.opname is "BINARY_MATRIX_MULTIPLY":
             # TODO: 
+            log.warning("%s Not support" % instruct.opname)
             return
 
         elif instruct.opname is "BINARY_FLOOR_DIVIDE":
@@ -128,7 +133,9 @@ class Executor:
             mem_stack.push(result)
 
         elif instruct.opname is "BINARY_SUBSCR":
-            # TODO: 
+            index = mem_stack.pop().value
+            target_list = mem_stack.pop()
+            mem_stack.push(target_list.get(index))
             return
 
         elif instruct.opname is "BINARY_LSHIFT":
@@ -167,6 +174,7 @@ class Executor:
 
         elif instruct.opname is "INPLACE_POWER":
             # TODO: 
+            log.warning("%s Not support" % instruct.opname)
             return
 
         elif instruct.opname is "INPLACE_MULTIPLY":
@@ -177,6 +185,7 @@ class Executor:
 
         elif instruct.opname is "INPLACE_MATRIX_MULTIPLY":
             # TODO: 
+            log.warning("%s Not support" % instruct.opname)
             return
 
         elif instruct.opname is "INPLACE_FLOOR_DIVIDE":
@@ -211,6 +220,7 @@ class Executor:
 
         elif instruct.opname is "INPLACE_SUBSCR":
             # TODO: 
+            log.warning("%s Not support" % instruct.opname)
             return
 
         elif instruct.opname is "INPLACE_LSHIFT":
@@ -249,22 +259,27 @@ class Executor:
 
         elif instruct.opname is "GET_AWAITABLE":
             # TODO: 
+            log.warning("%s Not support" % instruct.opname)
             return
 
         elif instruct.opname is "GET_AITER":
             # TODO: 
+            log.warning("%s Not support" % instruct.opname)
             return
 
         elif instruct.opname is "GET_ANEXT":
             # TODO: 
+            log.warning("%s Not support" % instruct.opname)
             return
 
         elif instruct.opname is "BEFORE_ASYNC_WITH":
             # TODO: 
+            log.warning("%s Not support" % instruct.opname)
             return
 
         elif instruct.opname is "SETUP_ASYNC_WITH":
             # TODO: 
+            log.warning("%s Not support" % instruct.opname)
             return
 
         #
@@ -282,14 +297,17 @@ class Executor:
 
         elif instruct.opname is "SET_ADD":
             # TODO
+            log.warning("%s Not support" % instruct.opname)
             return
 
         elif instruct.opname is "LIST_APPEND":
             # TODO
+            log.warning("%s Not support" % instruct.opname)
             return
 
         elif instruct.opname is "MAP_ADD":
             # TODO
+            log.warning("%s Not support" % instruct.opname)
             return
 
         elif instruct.opname is "RETURN_VALUE":
@@ -298,59 +316,72 @@ class Executor:
                 if func_name is "__init__":
                     ret_value = variables["self"]
             mem_stack.push(ret_value)
-            print("    Return: ", ret_value)
+            log.debug("    Return: %s" % ret_value)
             return True
 
         elif instruct.opname is "YIELD_VALUE":
             # TODO
+            log.warning("%s Not support" % instruct.opname)
             return
 
         elif instruct.opname is "YIELD_FROM":
             # TODO
+            log.warning("%s Not support" % instruct.opname)
             return
 
         elif instruct.opname is "SETUP_ANNOTATIONS":
             # TODO
+            log.warning("%s Not support" % instruct.opname)
             return
 
         elif instruct.opname is "IMPORT_STAR":
             # TODO
+            log.warning("%s Not support" % instruct.opname)
             return
 
         elif instruct.opname is "POP_BLOCK":
             # TODO
+            log.warning("%s Not support" % instruct.opname)
             return
 
         elif instruct.opname is "POP_EXCEPT":
             # TODO
+            log.warning("%s Not support" % instruct.opname)
             return
 
         elif instruct.opname is "END_FINALLY":
             # TODO
+            log.warning("%s Not support" % instruct.opname)
             return
 
         elif instruct.opname is "WITH_CLEAN_START":
             # TODO
+            log.warning("%s Not support" % instruct.opname)
             return
 
         elif instruct.opname is "WITH_CLEAN_FINISH":
             # TODO
+            log.warning("%s Not support" % instruct.opname)
             return
 
         elif instruct.opname is "STORE_NAME":
             # TODO
+            log.warning("%s Not support" % instruct.opname)
             return
 
         elif instruct.opname is "DELETE_NAME":
             # TODO
+            log.warning("%s Not support" % instruct.opname)
             return
 
         elif instruct.opname is "UNPACK_SEQUENCE":
             # TODO
+            log.warning("%s Not support" % instruct.opname)
             return
 
         elif instruct.opname is "UNPACK_EX":
             # TODO
+            log.warning("%s Not support" % instruct.opname)
             return
 
         elif instruct.opname is "STORE_ATTR":
@@ -360,14 +391,17 @@ class Executor:
 
         elif instruct.opname is "DELETE_ATTR":
             # TODO
+            log.warning("%s Not support" % instruct.opname)
             return
 
         elif instruct.opname is "STORE_GLOBAL":
             # TODO
+            log.warning("%s Not support" % instruct.opname)
             return
 
         elif instruct.opname is "DELETE_GLOBAL":
             # TODO
+            log.warning("%s Not support" % instruct.opname)
             return
 
         elif instruct.opname is "LOAD_CONST":
@@ -383,50 +417,67 @@ class Executor:
 
         elif instruct.opname is "LOAD_NAME":
             # TODO
+            log.warning("%s Not support" % instruct.opname)
             return
 
         elif instruct.opname is "BUILD_TUPLE":
             # TODO
+            log.warning("%s Not support" % instruct.opname)
             return
 
         elif instruct.opname is "BUILD_LIST":
-            # TODO
-            return
+            size = instruct.argval
+            new_list = ConcolicList()
+            while size > 0:
+                size -= 1
+                new_list.append(mem_stack.pop())
+            log.debug("List build reverse")
+            new_list.value.reverse()
+            mem_stack.push(new_list)
 
         elif instruct.opname is "BUILD_MAP":
             # TODO
+            log.warning("%s Not support" % instruct.opname)
             return
 
         elif instruct.opname is "BUILD_CONST_KEY_MAP":
             # TODO
+            log.warning("%s Not support" % instruct.opname)
             return
 
         elif instruct.opname is "BUILD_STRING":
             # TODO
+            log.warning("%s Not support" % instruct.opname)
             return
 
         elif instruct.opname is "BUILD_TUPLE_UNPACK":
             # TODO
+            log.warning("%s Not support" % instruct.opname)
             return
 
         elif instruct.opname is "BUILD_TUPLE_UNPACK_WITH_CALL":
             # TODO
+            log.warning("%s Not support" % instruct.opname)
             return
 
         elif instruct.opname is "BUILD_LIST_UNPACK":
             # TODO
+            log.warning("%s Not support" % instruct.opname)
             return
 
         elif instruct.opname is "BUILD_SET_UNPACK":
             # TODO
+            log.warning("%s Not support" % instruct.opname)
             return
 
         elif instruct.opname is "BUILD_MAP_UNPACK":
             # TODO
+            log.warning("%s Not support" % instruct.opname)
             return
 
         elif instruct.opname is "BUILD_MAP_UNPACK_WITH_CALL":
             # TODO
+            log.warning("%s Not support" % instruct.opname)
             return
 
         elif instruct.opname is "LOAD_ATTR":
@@ -448,54 +499,67 @@ class Executor:
 
         elif instruct.opname is "IMPORT_NAME":
             # TODO
+            log.warning("%s Not support" % instruct.opname)
             return
 
         elif instruct.opname is "IMPORT_FROM":
             # TODO
+            log.warning("%s Not support" % instruct.opname)
             return
 
         elif instruct.opname is "JUMP_FORWARD":
             # TODO
+            log.warning("%s Not support" % instruct.opname)
             return
 
         elif instruct.opname is "POP_JUMP_IF_TRUE":
             # TODO
+            log.warning("%s Not support" % instruct.opname)
             return
 
         elif instruct.opname is "POP_JUMP_IF_FALSE":
             # TODO
+            log.warning("%s Not support" % instruct.opname)
             return
 
         elif instruct.opname is "JUMP_IF_TRUE_OR_POP":
             # TODO
+            log.warning("%s Not support" % instruct.opname)
             return
 
         elif instruct.opname is "JUMP_IF_FALSE_OR_POP":
             # TODO
+            log.warning("%s Not support" % instruct.opname)
             return
 
         elif instruct.opname is "JUMP_ABSOLUTE":
             # TODO
+            log.warning("%s Not support" % instruct.opname)
             return
 
         elif instruct.opname is "FOR_ITER":
             # TODO
+            log.warning("%s Not support" % instruct.opname)
             return
 
         elif instruct.opname is "LOAD_GLOBAL":
             # TODO
+            log.warning("%s Not support" % instruct.opname)
             return
 
         elif instruct.opname is "SETUP_LOOP":
             # TODO
+            log.warning("%s Not support" % instruct.opname)
             return
 
         elif instruct.opname is "SETUP_EXCEPT":
             # TODO
+            log.warning("%s Not support" % instruct.opname)
             return
 
         elif instruct.opname is "SETUP_FINALLY":
             # TODO
+            log.warning("%s Not support" % instruct.opname)
             return
 
         elif instruct.opname is "LOAD_FAST":
@@ -507,67 +571,85 @@ class Executor:
             store_name = instruct.argval
             var = mem_stack.pop() 
             variables[store_name] = var
-            print("Store:", var)
+            log.debug("Store: %s" % var)
 
         elif instruct.opname is "DELETE_FAST":
             # TODO
+            log.warning("%s Not support" % instruct.opname)
             return
 
         elif instruct.opname is "LOAD_CLOSURE":
             # TODO
+            log.warning("%s Not support" % instruct.opname)
             return
 
         elif instruct.opname is "LOAD_DEREF":
             # TODO
+            log.warning("%s Not support" % instruct.opname)
             return
 
         elif instruct.opname is "STORE_DEREF":
             # TODO
+            log.warning("%s Not support" % instruct.opname)
             return
 
         elif instruct.opname is "DELETE_DEREF":
             # TODO
+            log.warning("%s Not support" % instruct.opname)
             return
 
         elif instruct.opname is "RAISE_VARARGS":
             # TODO
+            log.warning("%s Not support" % instruct.opname)
             return
 
         elif instruct.opname is "CALL_FUNCTION":
-            # Will not enter
+            # TODO
+            log.warning("%s Not support" % instruct.opname)
             return
 
         elif instruct.opname is "CALL_FUNCTION_KW":
             # TODO
+            log.warning("%s Not support" % instruct.opname)
             return
 
         elif instruct.opname is "CALL_FUNCTION_EX":
             # TODO
+            log.warning("%s Not support" % instruct.opname)
             return
 
         elif instruct.opname is "LOAD_METHOD":
+            # TODO
+            log.warning("%s Not support" % instruct.opname)
             return
 
         elif instruct.opname is "CALL_METHOD":
+            # TODO
+            log.warning("%s Not support" % instruct.opname)
             return
 
         elif instruct.opname is "MAKE_FUNCTION":
             # TODO
+            log.warning("%s Not support" % instruct.opname)
             return
 
         elif instruct.opname is "BUILD_SLICE":
             # TODO
+            log.warning("%s Not support" % instruct.opname)
             return
 
         elif instruct.opname is "EXTENDED_ARG":
             # TODO
+            log.warning("%s Not support" % instruct.opname)
             return
 
         elif instruct.opname is "FORMAT_VALUE":
             # TODO
+            log.warning("%s Not support" % instruct.opname)
             return
 
         elif instruct.opname is "HAVE_ARGUMENT":
             # TODO
+            log.warning("%s Not support" % instruct.opname)
             return
 

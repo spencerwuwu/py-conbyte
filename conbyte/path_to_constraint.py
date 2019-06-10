@@ -1,7 +1,11 @@
 # Copyright: see copyright.txt
+import logging
 
 from .predicate import Predicate
 from .constraint import Constraint
+
+
+log = logging.getLogger("ct.pathconstraint")
 
 class PathToConstraint:
     def __init__(self, add):
@@ -33,6 +37,8 @@ class PathToConstraint:
             cneg = self.current_constraint.add_child(pneg)
             # we add the new constraint to the queue of the engine for later processing
             self.add(cneg)
+            log.info("Cur constraint %s" % c)
+            log.info("Add constraint %s" % cneg)
 
         self.current_constraint = c
 
@@ -43,12 +49,14 @@ class PathToConstraint:
             expected = self.expected_path.pop()
             # while not at the end of the path, we expect the same predicate result
             # at the end of the path, we expect a different predicate result
+            """
             done = self.expected_path == []
             if (not done and expected.result != c.predicate.result or
                             done and expected.result == c.predicate.result):
                 print("Replay mismatch (done=", done, ")")
                 print(expected)
                 print(c.predicate)
+            """
 
         if cneg is not None:
             # We've already processed both

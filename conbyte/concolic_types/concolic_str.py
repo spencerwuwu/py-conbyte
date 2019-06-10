@@ -1,6 +1,8 @@
 from .concolic_type import *
 from .concolic_int import *
 
+log = logging.getLogger("ct.con.str")
+
 class ConcolicStr(ConcolicType):
     def __init__(self, expr, value=None):
         self.expr = expr
@@ -8,7 +10,7 @@ class ConcolicStr(ConcolicType):
             self.value = "\'expr\'"
         else:
             self.value = value
-        print("  Int  expr:", expr)
+        log.debug("  Str  expr: %s" % expr)
 
     def __add__(self, other):
         value = self.value + other.value
@@ -24,6 +26,9 @@ class ConcolicStr(ConcolicType):
         value = len(self.value)
         expr = ["str.len", self.expr]
         return ConcolicInteger(expr, value)
+
+    def __str__(self):
+        return "{ConStr, value: \'%s\', expr: %s)" % (self.value, self.expr)
 
     # TODO
     """

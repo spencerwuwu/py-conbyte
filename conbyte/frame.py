@@ -4,9 +4,11 @@ from .concolic_types.concolic_int import *
 from .concolic_types.concolic_str import * 
 from .concolic_types.concolic_object import * 
 
+log = logging.getLogger("ct.frame")
+
 class Frame:
     def __init__(self, frame, mem_stack):
-        # print("New Frame")
+        log.debug("New Frame")
         """
         print("locals")
         for g_name in frame.f_locals:
@@ -47,15 +49,18 @@ class Frame:
         return symbolic_inputs
 
     def set_locals(self, mem_stack, is_init_object):
-        for local in self.locals:
-            print("   local:", local)
+        for local in reversed(list(self.locals.keys())):
+            log.debug("   local:", local)
             if local != "self":
                 var = mem_stack.pop()
                 self.variables[local] = var
+                log.debug("        :", var)
             else:
                 if is_init_object:
                     self.variables[local] = ConcolicObject()
+                    log.debug("        : Init" )
                 else:
                     var = mem_stack.pop()
                     self.variables[local] = var
+                    log.debug("        :", var)
 

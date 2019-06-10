@@ -1,8 +1,11 @@
 import logging
+import sys
 import time
 import os
 from subprocess import Popen, PIPE, STDOUT
 from string import Template
+
+log = logging.getLogger("ct.z3_wrapper")
 
 class Z3Wrapper(object):
     options = {"lan": "smt.string_solver=z3str3"}
@@ -44,7 +47,7 @@ class Z3Wrapper(object):
         formulas = self._build_expr()
         process = Popen(z3_cmd.split(" "), stdin=PIPE, stdout=PIPE, stderr=PIPE)
         stdout, stderr = process.communicate(input=formulas.encode())
-        print(stdout.decode())
+        log.info("\n" + stdout.decode())
 
         output = stdout.decode()
         if output is None:

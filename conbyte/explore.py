@@ -13,11 +13,12 @@ from .path_to_constraint import *
 from .concolic_types import concolic_type
 from .z3_wrapper import Z3Wrapper
 
+log = logging.getLogger("ct.explore")
 
 def print_inst(obj):
     lines = dis.get_instructions(obj)
     for line in lines:
-        print(line)
+        log.debug(line)
 
 class ExplorationEngine:
 
@@ -73,14 +74,14 @@ class ExplorationEngine:
                     if inspect.isfunction(obj_o):
                         print( "function ", name_o)
                         #print_inst(obj_o)
-                """
                 dis.dis(obj)
+                """
             if inspect.ismethod(obj):
                 print("method", name)
                 #dis.dis(obj)
                 # print_inst(obj)
             if inspect.isfunction(obj):
-                # print("function ", name)
+                print("function ", name)
                 # dis.dis(obj)
                 # print_inst(obj)
                 self.trace_into.append(name)
@@ -91,10 +92,12 @@ class ExplorationEngine:
         instructs = frame.instructions
         while not instructs.is_empty():
             instruct = instructs.pop()
-            print(" instr", instruct.opname, instruct.argval, instruct.argrepr)
+            log.debug(" - instr %s %s %s" % (instruct.opname, instruct.argval, instruct.argrepr))
             if instruct.opname == "CALL_FUNCTION":
+                self.executor.execute_instr(self.call_stack, instruct, func_name)
                 return
             elif instruct.opname == "CALL_METHOD":
+                self.executor.execute_instr(self.call_stack, instruct, func_name)
                 return
             else:
                 re = self.executor.execute_instr(self.call_stack, instruct, func_name)
@@ -135,7 +138,7 @@ class ExplorationEngine:
         func_name = co.co_name
         line_no = frame.f_lineno
         filename = co.co_filename
-        print('%s line %s' % (func_name, line_no))
+        log.debug(' + %s line %s' % (func_name, line_no))
         instructions = self.get_line_instructions(line_no, dis.get_instructions(co))
 
         for instruct in instructions:
@@ -196,6 +199,7 @@ class ExplorationEngine:
             else:
                 while not self.constraints_to_solve.is_empty():
                     target = self.constraints_to_solve.pop()
+                    log.info("Solving: %s" % target)
                     asserts, query = target.get_asserts_and_query()
                     ret, model = self.z3_wrapper.find_counter_example(asserts, query)
                     self.solved_constraints.push((target.id, ret, model))
@@ -215,7 +219,7 @@ class ExplorationEngine:
         args = []
         for name, value in model.items():
             args.append(value)
-        args.reverse()
+        # args.reverse()
         return args
 
 

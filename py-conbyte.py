@@ -104,6 +104,10 @@ def main():
         parser.error("Missing app to execute")
         sys.exit(1)
 
+    # logging.basicConfig(level=logging.INFO, format='%(asctime)s\t%(levelname)s\t%(message)s')
+    logging.basicConfig(level=logging.DEBUG, format='  %(name)s\t%(levelname)s\t%(message)s')
+    # logging.getLogger().addHandler(logging.StreamHandler(sys.stdout))
+
     base_name = os.path.basename(args[0])
     filename = os.path.abspath(args[0])
     path = filename.replace(base_name, "")

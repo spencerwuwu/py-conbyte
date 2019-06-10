@@ -1,6 +1,8 @@
 # Copyright: copyright.txt
 from .concolic_type import *
 
+log = logging.getLogger("ct.con.int")
+
 class ConcolicInteger(ConcolicType):
     def __init__(self, expr, value=None):
         self.expr = expr
@@ -11,7 +13,7 @@ class ConcolicInteger(ConcolicType):
                 self.value = int(expr)
         else:
             self.value = value
-        print("  Int  expr:", expr)
+        log.debug("  Int  expr: %s" % expr)
 
     def __int__(self):
         return self.value
