@@ -45,6 +45,7 @@ class Z3Wrapper(object):
         model = None
 
         formulas = self._build_expr()
+        log.debug("\n" + formulas)
         process = Popen(z3_cmd.split(" "), stdin=PIPE, stdout=PIPE, stderr=PIPE)
         stdout, stderr = process.communicate(input=formulas.encode())
         log.info("\n" + stdout.decode())
@@ -78,7 +79,7 @@ class Z3Wrapper(object):
                 else:
                     model[name] = int(value)
             else:
-                model[name] = value
+                model[name] = value.replace("\"", "", 1).replace("\"", "", -1)
         return model
 
 

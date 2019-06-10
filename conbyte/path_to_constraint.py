@@ -27,6 +27,9 @@ class PathToConstraint:
                 tmp = tmp.parent
 
     def which_branch(self, concolic_type):
+        if concolic_type.expr == 'nil':
+            log.info("Skip nil")
+            return
         p = Predicate(concolic_type, concolic_type.value)
         c = self.current_constraint.find_child(p)
         pneg = p.negate()

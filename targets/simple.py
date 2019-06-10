@@ -79,8 +79,36 @@ def simple(a, b):
     return c
 
 def add_string(a, b):
+    """
+    # Test building array
     arr = [a, b, "gg"]
-    c = arr[0]
-    # c = a.split(",", 2)[0]
-    #d = c.split(",")[0]
-    return c
+    if a in arr:
+        return 0
+    else:
+        return 1
+    # Test slice()
+    e = a[1:3]
+    # Test find()
+    search = a.find('g')
+    if search > 5:
+        return 0
+    else:
+        return 1
+    null = a.find(b)
+    if a.startswith("abcdef"):
+        return 0
+    else:
+        return 1
+    # in operation
+    if "abc" in a:
+        return 0
+    else:
+        return 1
+    # Test split
+    c = a.split(",", 2)[0]
+    d = c.split(",")[0]
+    # Test lower
+    c = a.lower()
+    """
+    c = a.replace(",", "!", 40)
+    return

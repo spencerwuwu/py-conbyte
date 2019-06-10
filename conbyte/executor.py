@@ -133,10 +133,18 @@ class Executor:
             mem_stack.push(result)
 
         elif instruct.opname is "BINARY_SUBSCR":
-            index = mem_stack.pop().value
-            target_list = mem_stack.pop()
-            mem_stack.push(target_list.get(index))
-            return
+            tos = mem_stack.pop()
+            if isinstance(tos, ConcolicInteger):
+                index = tos.value
+                target_list = mem_stack.pop()
+                mem_stack.push(target_list.get(index))
+            elif isinstance(tos, int):
+                index = tos
+                target_list = mem_stack.pop()
+                mem_stack.push(target_list.get(index))
+            else:
+                # Sliced object (Hopefully)
+                mem_stack.push(tos)
 
         elif instruct.opname is "BINARY_LSHIFT":
             to = mem_stack.pop()
@@ -493,9 +501,12 @@ class Executor:
 
         elif instruct.opname is "COMPARE_OP":
             op = instruct.argval
-            comparand = mem_stack.pop()
-            operand = mem_stack.pop()
-            self.path.which_branch(operand.compare_op(op, comparand))
+            tos = mem_stack.pop()
+            tos1 = mem_stack.pop()
+            if op == "in":
+                mem_stack.push(tos.contains(tos1))
+            else:
+                mem_stack.push(tos1.compare_op(str(op), tos))
 
         elif instruct.opname is "IMPORT_NAME":
             # TODO
@@ -513,13 +524,11 @@ class Executor:
             return
 
         elif instruct.opname is "POP_JUMP_IF_TRUE":
-            # TODO
-            log.warning("%s Not support" % instruct.opname)
+            self.path.which_branch(mem_stack.pop())
             return
 
         elif instruct.opname is "POP_JUMP_IF_FALSE":
-            # TODO
-            log.warning("%s Not support" % instruct.opname)
+            self.path.which_branch(mem_stack.pop())
             return
 
         elif instruct.opname is "JUMP_IF_TRUE_OR_POP":
@@ -566,6 +575,7 @@ class Executor:
             load_name = instruct.argval
             load_var = variables[load_name]
             mem_stack.push(load_var)
+            log.debug("Load: %s" % load_var)
 
         elif instruct.opname is "STORE_FAST":
             store_name = instruct.argval
@@ -619,13 +629,21 @@ class Executor:
             return
 
         elif instruct.opname is "LOAD_METHOD":
-            # TODO
-            log.warning("%s Not support" % instruct.opname)
+            method = instruct.argrepr
+            target = mem_stack.pop()
+            method_to_call = getattr(target, method)
+            mem_stack.push(method_to_call)
             return
 
         elif instruct.opname is "CALL_METHOD":
-            # TODO
-            log.warning("%s Not support" % instruct.opname)
+            argv = instruct.argval
+            args = []
+            while argv > 0:
+                args.append(mem_stack.pop())
+                argv -= 1
+            args.reverse()
+            method_to_call = mem_stack.pop()
+            mem_stack.push(method_to_call(*args))
             return
 
         elif instruct.opname is "MAKE_FUNCTION":
@@ -634,9 +652,19 @@ class Executor:
             return
 
         elif instruct.opname is "BUILD_SLICE":
-            # TODO
-            log.warning("%s Not support" % instruct.opname)
-            return
+            argv = instruct.argval
+            if argv > 2:
+                log.error("Does not support genative step yet")
+            args = []
+            while argv > 0:
+                var = mem_stack.pop().value
+                if var < 0:
+                    log.error("Does not support genative step yet")
+                args.append(var)
+                argv -= 1
+            args.reverse()
+            target = mem_stack.pop()
+            mem_stack.push(target.get_slice(*args))
 
         elif instruct.opname is "EXTENDED_ARG":
             # TODO

@@ -12,7 +12,7 @@ class ConcolicType(object):
     def __init__(self, expr=None, value=None):
         self.expr = expr
         self.value = value
-        log.debug("  Type expr: %s" % expr)
+        log.debug("  ConType, value %s, expr: %s" % (value, expr))
 
     def get_concrete(self):
         return self.value
@@ -21,17 +21,17 @@ class ConcolicType(object):
         expr = [operator, self.expr, other.expr]
         val_l = self.value
         val_r = other.value
-        if operator is "==":
+        if operator == "==":
             value = val_l == val_r
-        if operator is "!=":
+        if operator == "!=":
             value = val_l != val_r
-        elif operator is ">":
+        elif operator == ">":
             value = val_l > val_r
-        elif operator is "<":
+        elif operator == "<":
             value = val_l < val_r
-        elif operator is ">=":
+        elif operator == ">=":
             value = val_l >= val_r
-        elif operator is "<=":
+        elif operator == "<=":
             value = val_l <= val_r
         else:
             return None

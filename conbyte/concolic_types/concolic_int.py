@@ -13,7 +13,7 @@ class ConcolicInteger(ConcolicType):
                 self.value = int(expr)
         else:
             self.value = value
-        log.debug("  Int  expr: %s" % expr)
+        log.debug("  ConInt, value: %s, expr: %s" % (self.value, self.expr))
 
     def __int__(self):
         return self.value
