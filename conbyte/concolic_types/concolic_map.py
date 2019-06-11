@@ -1,3 +1,4 @@
+from ..utils import *
 from .concolic_type import *
 
 log = logging.getLogger("ct.con.map")
@@ -25,6 +26,12 @@ class ConcolicMap(ConcolicType):
 
     def get(self, name):
         return self.value[name]
+
+    def get_iter(self):
+        queue = Queue()
+        for element in self.value:
+            queue.push(element)
+        return queue
 
     def store(self, name, val):
         if name not in self.value:

@@ -1,3 +1,4 @@
+from ..utils import *
 from .concolic_type import *
 from .concolic_int import *
 from .concolic_list import *
@@ -55,6 +56,13 @@ class ConcolicStr(ConcolicType):
 
 
 
+
+    def get_iter(self):
+        queue = Queue()
+        length = len(self.value)
+        for i in range(length):
+            queue.push(self.get(i))
+        return queue
 
     def contains(self, other):
         value = other.value in self.value

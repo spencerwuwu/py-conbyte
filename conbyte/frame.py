@@ -23,6 +23,7 @@ class Frame:
         self.g_variables = dict()
         self.mem_stack = mem_stack
         self.enter_object = None
+        self.next_offset = 0
         """
         print("global")
         for g_name in frame.f_globals:

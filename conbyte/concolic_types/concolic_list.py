@@ -1,3 +1,4 @@
+from ..utils import *
 from .concolic_type import *
 
 log = logging.getLogger("ct.con.list")
@@ -29,6 +30,12 @@ class ConcolicList(ConcolicType):
 
     def get_slice(self, start=None, stop=None):
         return ConcolicList(self.value[start:stop])
+
+    def get_iter(self):
+        queue = Queue()
+        for element in self.value:
+            queue.push(element)
+        return queue
 
     def contains(self, other):
         return ConcolicType('nil', None)

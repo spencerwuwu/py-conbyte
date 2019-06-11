@@ -77,8 +77,9 @@ class Executor:
             mem_stack.push(target)
 
         elif instruct.opname is "GET_ITER":
-            # TODO: 
-            log.warning("%s Not implemented" % instruct.opname)
+            # Get a queue
+            tos = mem_stack.pop()
+            mem_stack.push(tos.get_iter())
             return
 
         elif instruct.opname is "GET_YIELD_FROM_ITER":
@@ -574,8 +575,12 @@ class Executor:
             return
 
         elif instruct.opname is "FOR_ITER":
-            # TODO
-            log.warning("%s Not implemented" % instruct.opname)
+            next_offset = instruct.argval
+            if not mem_stack.top().is_empty():
+                mem_stack.push(mem_stack.top().pop())
+            else:
+                mem_stack.pop()
+                c_frame.next_offset = next_offset
             return
 
         elif instruct.opname is "LOAD_GLOBAL":

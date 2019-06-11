@@ -97,6 +97,14 @@ class ExplorationEngine:
         instructs = frame.instructions
         while not instructs.is_empty():
             instruct = instructs.pop()
+            offset = frame.next_offset
+            if offset != 0:
+                if instruct.offset < offset:
+                    log.debug("Moving to offset %s" % offset)
+                    continue
+                else:
+                    log.debug("Reach offset %s" % offset)
+                    frame.next_offset = 0
             log.debug(" - instr %s %s %s" % (instruct.opname, instruct.argval, instruct.argrepr))
             if instruct.opname == "CALL_FUNCTION":
                 self.executor.execute_instr(self.call_stack, instruct, func_name)
@@ -104,6 +112,9 @@ class ExplorationEngine:
             elif instruct.opname == "CALL_METHOD":
                 self.executor.execute_instr(self.call_stack, instruct, func_name)
                 return
+            elif instruct.opname == "JUMP_ABSOLUTE":
+                frame.next_offset = instruct.argval
+                frame.instructions.sanitize()
             else:
                 re = self.executor.execute_instr(self.call_stack, instruct, func_name)
         return re
