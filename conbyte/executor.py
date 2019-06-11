@@ -4,6 +4,7 @@ from .concolic_types.concolic_int import *
 from .concolic_types.concolic_str import * 
 from .concolic_types.concolic_object import * 
 from .concolic_types.concolic_list import * 
+from .concolic_types.concolic_map import * 
 
 class Executor:
     def __init__(self, path):
@@ -263,6 +264,20 @@ class Executor:
             result = to1 | to
             mem_stack.push(result)
 
+        elif instruct.opname is "STORE_SUBSCR":
+            tos = mem_stack.pop()
+            if isinstance(tos, ConcolicInteger) or \
+               isinstance(tos, ConcolicStr):
+                tos = tos.value
+            tos1 = mem_stack.pop()
+            tos2 = mem_stack.pop()
+            tos1.store(tos, tos2)
+
+        elif instruct.opname is "DELETE_SUBSCR":
+            # TODO: 
+            log.warning("%s Not implemented" % instruct.opname)
+            return
+
         #
         # Coroutine opcodes
         #
@@ -455,13 +470,16 @@ class Executor:
             mem_stack.push(new_list)
 
         elif instruct.opname is "BUILD_MAP":
-            # TODO
-            log.warning("%s Not implemented" % instruct.opname)
+            mem_stack.push(ConcolicMap())
             return
 
         elif instruct.opname is "BUILD_CONST_KEY_MAP":
-            # TODO
-            log.warning("%s Not implemented" % instruct.opname)
+            names = mem_stack.pop()
+            size = instruct.argval
+            build_map = ConcolicMap()
+            for i in range(size):
+                build_map.store(names[i], mem_stack.pop())
+            mem_stack.push(build_map)
             return
 
         elif instruct.opname is "BUILD_STRING":
@@ -653,6 +671,10 @@ class Executor:
                     mem_stack.push(ConcolicStr(expr, value))
                 else:
                     mem_stack.push(str(target))
+            elif func == "dict":
+                mem_stack.push(ConcolicMap())
+            elif func == "list":
+                mem_stack.push(ConcolicList())
             return
 
         elif instruct.opname is "CALL_FUNCTION_KW":
@@ -669,12 +691,16 @@ class Executor:
             method = instruct.argrepr
             target = mem_stack.pop()
             if isinstance(target, ConcolicInteger) or \
-               isinstance(target, ConcolicStr):
+               isinstance(target, ConcolicStr) or \
+               isinstance(target, ConcolicMap) or \
+               isinstance(target, ConcolicList):
                 method_to_call = getattr(target, method)
                 mem_stack.push(method_to_call)
                 self.overwrite_method = True
             else:
-                mem_stack.push(target)
+                # Pass in as self
+                if isinstance(target, ConcolicObject):
+                    mem_stack.push(target)
                 self.overwrite_method = False
             return
 

@@ -73,13 +73,14 @@ class Frame:
             if name.startswith("__"):
                 continue
 
-            log.debug("   global: %s" % name)
             if isinstance(val, int):
+                log.debug("   global: %s" % name)
                 log.debug("         : %s" % name)
                 self.g_variables[name] = ConcolicInteger(val, val)
             elif isinstance(val, str):
+                log.debug("   global: %s" % name)
                 log.debug("         : %s" % name)
                 self.g_variables[name] = ConcolicStr('\"' + val + '\"')
             else:
-                log.debug("         : skip")
+                # log.debug("         : skip")
                 continue

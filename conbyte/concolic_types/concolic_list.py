@@ -22,7 +22,7 @@ class ConcolicList(ConcolicType):
     def append(self, element):
         self.value.append(element)
         self.size += 1
-        log.debug("List append: %s", element)
+        log.debug("  List append: %s" % element)
 
     def get(self, index=0):
         return self.value[index]
@@ -34,6 +34,8 @@ class ConcolicList(ConcolicType):
         return ConcolicType('nil', None)
 
     def __str__(self):
+        if self.size == 0:
+            return "  List: nil"
         return "  List: %s" % ",".join(val.__str__() for val in self.value)
         
     def __add__(self, other):

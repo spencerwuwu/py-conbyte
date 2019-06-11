@@ -1,2 +1,2 @@
-#INI_ARGS = [0, 0]
-INI_ARGS = ["10101", "111"]
+INI_ARGS = [0, 0]
+#INI_ARGS = ["a,b,c,,defg", "abcdefg"]
