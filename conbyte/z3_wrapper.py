@@ -48,7 +48,7 @@ class Z3Wrapper(object):
         log.debug("\n" + formulas)
         process = Popen(z3_cmd.split(" "), stdin=PIPE, stdout=PIPE, stderr=PIPE)
         stdout, stderr = process.communicate(input=formulas.encode())
-        log.info("\n" + stdout.decode())
+        log.debug("\n" + stdout.decode())
 
         output = stdout.decode()
         if output is None:

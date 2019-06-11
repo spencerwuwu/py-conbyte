@@ -1,3 +1,3 @@
 # py-conbyte 
 
-./py-conbyte.py -s simple targets/simple.py
+./py-conbyte.py -e test_string -i inputs targets/simple.py

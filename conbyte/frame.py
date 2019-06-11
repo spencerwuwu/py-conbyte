@@ -20,6 +20,7 @@ class Frame:
         self.locals = frame.f_locals
         self.instructions = Queue()
         self.variables = dict()
+        self.g_variables = dict()
         self.mem_stack = mem_stack
         self.enter_object = None
         """
@@ -46,15 +47,17 @@ class Frame:
                     concolic_var = ConcolicStr(local, local_value)
                     symbolic_inputs[local] = "String"
                 self.variables[local] = concolic_var
+
+        self._set_globals()
         return symbolic_inputs
 
     def set_locals(self, mem_stack, is_init_object):
         for local in reversed(list(self.locals.keys())):
-            log.debug("   local:", local)
+            log.debug("   local: %s" % local)
             if local != "self":
                 var = mem_stack.pop()
                 self.variables[local] = var
-                log.debug("        :", var)
+                log.debug("        : %s" % var)
             else:
                 if is_init_object:
                     self.variables[local] = ConcolicObject()
@@ -62,5 +65,21 @@ class Frame:
                 else:
                     var = mem_stack.pop()
                     self.variables[local] = var
-                    log.debug("        :", var)
+                    log.debug("        : %s" % var)
+        self._set_globals()
 
+    def _set_globals(self):
+        for name, val in self.globals.items():
+            if name.startswith("__"):
+                continue
+
+            log.debug("   global: %s" % name)
+            if isinstance(val, int):
+                log.debug("         : %s" % name)
+                self.g_variables[name] = ConcolicInteger(val, val)
+            elif isinstance(val, str):
+                log.debug("         : %s" % name)
+                self.g_variables[name] = ConcolicStr('\"' + val + '\"')
+            else:
+                log.debug("         : skip")
+                continue

@@ -9,10 +9,10 @@ class ConcolicStr(ConcolicType):
         self.expr = expr
 
         if value is None:
-            self.value = expr
+            self.value = expr.replace("\"", "", -1).replace("\"", "", -1)
         else:
             self.value = value
-        log.debug("ConStr, value: \'%s\', expr: %s" % (self.value, self.expr))
+        log.debug("  ConStr, value: %s, expr: %s" % (self.value, self.expr))
         
 
     def __add__(self, other):
@@ -30,8 +30,31 @@ class ConcolicStr(ConcolicType):
         expr = ["str.len", self.expr]
         return ConcolicInteger(expr, value)
 
+    """
+       Global functions
+    """
+    def len(self):
+        value = len(self.value)
+        expr = ["str.len", self.expr]
+        return ConcolicInteger(expr, value)
+
+    def int(self):
+        value = int(self.value)
+        expr = ["str.to.int", self.expr]
+        return ConcolicInteger(expr, value)
+
+    def get(self, index):
+        if isinstance(index, int):
+            index = ConcolicInteger(index, index)
+        value = self.value[index.value]
+        expr = ["str.at", self.expr, index.expr]
+        return ConcolicStr(expr, value)
+
     def __str__(self):
-        return "{ConStr, value: \'%s\', expr: %s)" % (self.value, self.expr)
+        return "{ConStr, value: %s, expr: %s)" % (self.value, self.expr)
+
+
+
 
     def contains(self, other):
         value = other.value in self.value
@@ -39,7 +62,7 @@ class ConcolicStr(ConcolicType):
         return ConcolicType(expr, value)
 
     def get_slice(self, start=None, stop=None):
-        return ConcolicStr(self.value[start:stop])
+        return ConcolicStr('\"' + self.value[start:stop] + '\"')
 
     
     def find(self, findstr, beg=0):
@@ -58,11 +81,11 @@ class ConcolicStr(ConcolicType):
 
         if sep is not None:
             if len(self.value) == 0:
-                return ConcolicList([ConcolicStr("")])
+                return ConcolicList([ConcolicStr("\"\"")])
         else:
             sep = ConcolicStr(" ")
             if len(self.value) == 0:
-                return ConcolicList([ConcolicStr("")])
+                return ConcolicList([ConcolicStr("\"\"")])
         if isinstance(sep, str):
             sep = ConcolicStr(sep)
 
@@ -80,7 +103,7 @@ class ConcolicStr(ConcolicType):
     # Return a new string, no continued expr
     def lower(self):
         value = self.value.lower()
-        return ConcolicStr(value)
+        return ConcolicStr('\"' + value + '\"')
 
     def replace(self, old, new, maxreplace=-1):
         value = self.value
@@ -112,24 +135,14 @@ class ConcolicStr(ConcolicType):
     """
     def __getitem__(self, key):
     """
+    # Return a new string, no continued expr
     def count(self, sub):
-        """String count is not a native function of the SMT solver. Instead, we implement count as a recursive series of
-        find operations. Note that not all of the functionality of count is supported at this time, such as the start
-        index."""
-        if sub.value not in self.value:
-            ret = ConcolicInteger(0)
-        elif sub.value == "":
-            ret = self.__len__() + 1
-        else:
-            find_idx = self.find(sub).value
-            reststr = ConcolicStr(self.value[find_idx + sub.value.__len__():])
-            ret = reststr.count(sub) + 1
-        # assert int(ret) == str.count(str(self), str(sub))
-        return ret
+        count = self.value.count(sub.value)
+        return ConcolicInteger(count)
 
 
     # Return a new string, no continued expr
     def strip(self, chars=None):
         value = self.value.strip(chars)
-        return ConcolicStr(value)
+        return ConcolicStr('\"' + value + '\"')
 

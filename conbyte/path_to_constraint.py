@@ -37,34 +37,30 @@ class PathToConstraint:
 
         if c is None:
             c = self.current_constraint.add_child(p)
+            c.processed = True
             cneg = self.current_constraint.add_child(pneg)
             # we add the new constraint to the queue of the engine for later processing
             self.add(cneg)
-            log.info("Cur constraint %s" % c)
-            log.info("Add constraint %s" % cneg)
+            log.debug("Cur constraint %s" % c)
+            log.debug("Add constraint %s" % cneg)
 
         self.current_constraint = c
 
         # check for path mismatch
         # IMPORTANT: note that we don't actually check the predicate is the
         # same one, just that the direction taken is the same
+        """
         if self.expected_path is not None and self.expected_path != []:
             expected = self.expected_path.pop()
             # while not at the end of the path, we expect the same predicate result
             # at the end of the path, we expect a different predicate result
-            """
             done = self.expected_path == []
             if (not done and expected.result != c.predicate.result or
                             done and expected.result == c.predicate.result):
-                print("Replay mismatch (done=", done, ")")
-                print(expected)
-                print(c.predicate)
-            """
-
-        if cneg is not None:
-            # We've already processed both
-            cneg.processed = True
-            c.processed = True
+                log.info("Replay mismatch (done=%s)" % done)
+                log.debug(expected)
+                log.debug(c.predicate)
+        """
 
         self.current_constraint = c
 

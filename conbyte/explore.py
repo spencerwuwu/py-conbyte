@@ -26,7 +26,10 @@ class ExplorationEngine:
         # Set up import environment
         sys.path.append(path)
         target_module = __import__(module)
-        self.entry = entry
+        if entry == None:
+            self.entry = module
+        else:
+            self.entry = entry
 
         self.trace_into = []
         self.functions = dict()
@@ -68,8 +71,8 @@ class ExplorationEngine:
             """
 
             if inspect.isclass(obj):
-                print("class", name)
                 """
+                print("class", name)
                 for name_o, obj_o in inspect.getmembers(obj):
                     if inspect.isfunction(obj_o):
                         print( "function ", name_o)
@@ -77,15 +80,17 @@ class ExplorationEngine:
                 dis.dis(obj)
                 """
             if inspect.ismethod(obj):
-                print("method", name)
+                """
+                # print("method", name)
                 #dis.dis(obj)
                 # print_inst(obj)
+                """
             if inspect.isfunction(obj):
-                print("function ", name)
                 # dis.dis(obj)
                 # print_inst(obj)
                 self.trace_into.append(name)
                 self.functions[name] = Function(obj)
+                print("function ", name)
                 dis.dis(obj)
 
     def execute_instructs(self, frame, func_name=None):
@@ -157,8 +162,8 @@ class ExplorationEngine:
             return
         co = frame.f_code
         func_name = co.co_name
-        # if func_name in self.trace_into:
-            # Trace into this function
+        if "/python3." in co.co_filename :
+            return
         current_frame = Frame(frame, self.mem_stack)
         if not self.call_stack.is_empty():
             if func_name == "__init__":
@@ -199,7 +204,7 @@ class ExplorationEngine:
             else:
                 while not self.constraints_to_solve.is_empty():
                     target = self.constraints_to_solve.pop()
-                    log.info("Solving: %s" % target)
+                    log.debug("Solving: %s" % target)
                     asserts, query = target.get_asserts_and_query()
                     ret, model = self.z3_wrapper.find_counter_example(asserts, query)
                     self.solved_constraints.push((target.id, ret, model))
@@ -232,8 +237,9 @@ class ExplorationEngine:
 
         execute = self.functions[self.entry].obj
         sys.settrace(self.trace_calls)
-        execute(*init_vars)
+        ret = execute(*init_vars)
         sys.settrace(None)
+        print("Return: ", ret)
 
         while len(self.new_constraints) > 0:
             constraint = self.new_constraints.pop()

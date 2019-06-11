@@ -23,7 +23,7 @@ class ConcolicType(object):
         val_r = other.value
         if operator == "==":
             value = val_l == val_r
-        if operator == "!=":
+        elif operator == "!=":
             value = val_l != val_r
         elif operator == ">":
             value = val_l > val_r
@@ -46,9 +46,12 @@ class ConcolicType(object):
             if not isinstance(expr2, list):
                 return False
             else:
-                return expr1[0] == expr2[0] and \
-                        self._eq_worker(expr1[1], expr2[1]) and \
-                        self._eq_worker(expr1[2], expr2[2])
+                if len(expr1) != len(expr2):
+                    return False
+                for i in range(len(expr1)):
+                    if not self._eq_worker(expr1[i], expr2[i]):
+                        return False
+                return True
         else:
             return expr1 == expr2
 
