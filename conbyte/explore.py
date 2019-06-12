@@ -95,6 +95,7 @@ class ExplorationEngine:
 
     def execute_instructs(self, frame, func_name=None):
         instructs = frame.instructions
+        re = None
         while not instructs.is_empty():
             instruct = instructs.pop()
             offset = frame.next_offset
@@ -112,9 +113,6 @@ class ExplorationEngine:
             elif instruct.opname == "CALL_METHOD":
                 self.executor.execute_instr(self.call_stack, instruct, func_name)
                 return
-            elif instruct.opname == "JUMP_ABSOLUTE":
-                frame.next_offset = instruct.argval
-                frame.instructions.sanitize()
             else:
                 re = self.executor.execute_instr(self.call_stack, instruct, func_name)
         return re

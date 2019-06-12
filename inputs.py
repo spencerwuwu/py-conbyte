@@ -1,2 +1,2 @@
-INI_ARGS = ["abc", "abc"]
-#INI_ARGS = ["a,b,c,,defg", "abcdefg"]
+INI_ARGS = [5, 2]
+#INI_ARGS = ["abcdefg", "abcdefg"]

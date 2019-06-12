@@ -11,6 +11,56 @@ class Executor:
         self.path = path
         self.overwrite_method = False
 
+    def _handle_jump(self, frame, instruct):
+        offset = instruct.argval
+        frame.next_offset = offset
+        if instruct.offset > offset:
+            frame.instructions.sanitize()
+    
+    def _do_range(self, argv, mem_stack):
+        args = []
+        for i in range(argv):
+            var = mem_stack.pop().value
+            args.append(var)
+        args.reverse()
+        r_list = ConcolicList()
+        for i in range(*args):
+            r_list.append(ConcolicInteger(i))
+        return r_list 
+
+    def constant_compare(self, operator, val_l, val_r):
+        if isinstance(val_l, str):
+            expr_l = '\"' + val_l + '\"' 
+        else:
+            expr_l = val_l
+        if isinstance(val_r, str):
+            expr_r = '\"' + val_r + '\"' 
+        else:
+            expr_r = val_r
+
+        if operator == "==":
+            value = val_l == val_r
+            expr = ["=", expr_l, val_r]
+        elif operator == "!=":
+            value = val_l != val_r
+            expr = ['not', ["=", expr_l, val_r]]
+        elif operator == ">":
+            value = val_l > val_r
+            expr = [operator, expr_l, val_r]
+        elif operator == "<":
+            value = val_l < val_r
+            expr = [operator, expr_l, val_r]
+        elif operator == ">=":
+            value = val_l >= val_r
+            expr = [operator, expr_l, val_r]
+        elif operator == "<=":
+            value = val_l <= val_r
+            expr = [operator, expr_l, val_r]
+        else:
+            return None
+
+        return ConcolicType(expr, value)
+
     def execute_instr(self, call_stack, instruct, func_name=None):
         c_frame = call_stack.top()
         mem_stack = c_frame.mem_stack
@@ -536,7 +586,11 @@ class Executor:
             if op == "in":
                 mem_stack.push(tos.contains(tos1))
             else:
-                mem_stack.push(tos1.compare_op(str(op), tos))
+                if isinstance(tos1, ConcolicInteger) or \
+                   isinstance(tos1, ConcolicStr):
+                    mem_stack.push(tos1.compare_op(str(op), tos))
+                else:
+                    mem_stack.push(self.constant_compare(op, tos1, tos))
 
         elif instruct.opname is "IMPORT_NAME":
             # TODO
@@ -549,29 +603,46 @@ class Executor:
             return
 
         elif instruct.opname is "JUMP_FORWARD":
+            # TODO
+            self._handle_jump(c_frame, instruct)
             return
 
         elif instruct.opname is "POP_JUMP_IF_TRUE":
-            self.path.which_branch(mem_stack.pop())
+            condition = mem_stack.pop()
+            if condition.value:
+                self._handle_jump(c_frame, instruct)
+            self.path.which_branch(condition)
             return
 
         elif instruct.opname is "POP_JUMP_IF_FALSE":
-            self.path.which_branch(mem_stack.pop())
+            condition = mem_stack.pop()
+            if not condition.value:
+                self._handle_jump(c_frame, instruct)
+            self.path.which_branch(condition)
             return
 
         elif instruct.opname is "JUMP_IF_TRUE_OR_POP":
             # TODO
-            log.warning("%s Not implemented" % instruct.opname)
-            return
+            log.warning("%s Not checked" % instruct.opname)
+            condition = mem_stack.top()
+            self.path.which_branch(condition)
+            if condition.value:
+                self._handle_jump(c_frame, instruct)
+            else:
+                mem_stack.pop()
 
         elif instruct.opname is "JUMP_IF_FALSE_OR_POP":
             # TODO
-            log.warning("%s Not implemented" % instruct.opname)
-            return
+            log.warning("%s Not checked" % instruct.opname)
+            condition = mem_stack.top()
+            self.path.which_branch(condition)
+            if not condition.value:
+                self._handle_jump(c_frame, instruct)
+            else:
+                mem_stack.pop()
 
         elif instruct.opname is "JUMP_ABSOLUTE":
-            # TODO
-            log.warning("%s Not implemented" % instruct.opname)
+            self._handle_jump(c_frame, instruct)
             return
 
         elif instruct.opname is "FOR_ITER":
@@ -593,8 +664,6 @@ class Executor:
             return
 
         elif instruct.opname is "SETUP_LOOP":
-            # TODO
-            log.warning("%s Not implemented" % instruct.opname)
             return
 
         elif instruct.opname is "SETUP_EXCEPT":
@@ -663,23 +732,35 @@ class Executor:
                 mem_stack.push(args.pop())
 
             # Especially handle
-            overwrite = ["len", "int"]
+            # Overwrite: implemented in classes
+            overwrite = ["len", "int", "join"]
             if func in overwrite:
                 target = mem_stack.pop()
+                if isinstance(target, ConcolicList) or \
+                   isinstance(target, ConcolicMap):
+                    mem_stack.push(ConcolicInteger(target.size))
+                    return
                 function_to_call = getattr(target, func)
                 mem_stack.push(function_to_call())
             elif func == "str":
                 target = mem_stack.pop()
                 if isinstance(target, ConcolicInteger):
-                    value = str(target.value)
-                    expr = ["int.to.str", target.expr]
-                    mem_stack.push(ConcolicStr(expr, value))
+                    mem_stack.push(ConcolicStr(target.get_str()))
                 else:
                     mem_stack.push(str(target))
             elif func == "dict":
                 mem_stack.push(ConcolicMap())
+                # TODO
+                if argv != 0:
+                    log.warrning("Not implemented: dict(<with args>)")
             elif func == "list":
-                mem_stack.push(ConcolicList())
+                new_list = ConcolicList()
+                for i in range(argv):
+                    new_list.append(mem_stack.pop())
+                mem_stack.push(new_list)
+            elif func == "range":
+                range_list = self._do_range(argv, mem_stack)
+                mem_stack.push(range_list)
             return
 
         elif instruct.opname is "CALL_FUNCTION_KW":

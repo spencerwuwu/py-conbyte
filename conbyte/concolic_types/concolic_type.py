@@ -18,21 +18,26 @@ class ConcolicType(object):
         return self.value
     
     def compare_op(self, operator, other):
-        expr = [operator, self.expr, other.expr]
         val_l = self.value
         val_r = other.value
         if operator == "==":
             value = val_l == val_r
+            expr = ["=", self.expr, other.expr]
         elif operator == "!=":
             value = val_l != val_r
+            expr = ['not', ["=", self.expr, other.expr]]
         elif operator == ">":
             value = val_l > val_r
+            expr = [operator, self.expr, other.expr]
         elif operator == "<":
             value = val_l < val_r
+            expr = [operator, self.expr, other.expr]
         elif operator == ">=":
             value = val_l >= val_r
+            expr = [operator, self.expr, other.expr]
         elif operator == "<=":
             value = val_l <= val_r
+            expr = [operator, self.expr, other.expr]
         else:
             return None
 

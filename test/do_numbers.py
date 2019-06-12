@@ -1,6 +1,7 @@
 
 def do_numbers(a, b):
-    if a > 5:
+    d = 1 if a > b else -2
+    if a > d:
         c = a + b
     else:
         c = a - b
@@ -11,3 +12,4 @@ def do_numbers(a, b):
             return 2
     else:
         return 1
+    return c

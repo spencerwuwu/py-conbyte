@@ -108,6 +108,26 @@ class ConcolicStr(ConcolicType):
                 return ConcolicList([self.get_slice(0, sep_idx)]) + \
                    ConcolicList(self.get_slice(sep_idx + 1).split(sep, maxsplit - 1))
 
+    def join(self, array):
+        if isinstance(array, ConcolicList):
+            orig = ConcolicStr(self.expr, self.value)
+            self.value = ""
+            self.expr = "\"\""
+            for element in array.value:
+                if isinstance(element, ConcolicInteger):
+                    append = ConcolicStr(element.get_str())
+                if isinstance(element, ConcolicStr):
+                    append = element
+                else:
+                    append = ConcolicStr('\"' + str(element) + '\"')
+                self = self.__add__(append)
+                self = self.__add__(orig)
+
+        else:
+            log.warrning("Not implemented: str.join(<other type>)")
+                
+
+
     # Return a new string, no continued expr
     def lower(self):
         value = self.value.lower()
@@ -138,19 +158,18 @@ class ConcolicStr(ConcolicType):
 
         return ConcolicStr(n_expr, n_value)
 
-    
-    # TODO
-    """
-    def __getitem__(self, key):
-    """
-    # Return a new string, no continued expr
     def count(self, sub):
         count = self.value.count(sub.value)
         return ConcolicInteger(count)
 
 
-    # Return a new string, no continued expr
     def strip(self, chars=None):
         value = self.value.strip(chars)
         return ConcolicStr('\"' + value + '\"')
+
+    
+    # TODO
+    """
+    def __getitem__(self, key):
+    """
 

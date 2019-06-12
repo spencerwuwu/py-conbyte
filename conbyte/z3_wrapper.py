@@ -3,6 +3,7 @@ import sys
 import time
 import os
 from subprocess import Popen, PIPE, STDOUT
+import subprocess
 from string import Template
 
 log = logging.getLogger("ct.z3_wrapper")
@@ -46,13 +47,17 @@ class Z3Wrapper(object):
 
         formulas = self._build_expr()
         log.debug("\n" + formulas)
-        process = Popen(z3_cmd.split(" "), stdin=PIPE, stdout=PIPE, stderr=PIPE)
+
+        try:
+            process = Popen(z3_cmd.split(" "), stdin=PIPE, stdout=PIPE, stderr=PIPE)
+        except subprocess.CalledProcessError as e:
+            print(e.output)
+
         stdout, stderr = process.communicate(input=formulas.encode())
         log.debug("\n" + stdout.decode())
 
         output = stdout.decode()
         if output is None:
-            print(stderr)
             ret = "UNKNOWN"
         else:
             output = output.splitlines()

@@ -25,6 +25,11 @@ class ConcolicInteger(ConcolicType):
         self.value = -self.value
         self.expr = ["-", 0, self.expr]
 
+    def get_str(self):
+        value = str(self.value)
+        expr = ["int.to.str", self.expr]
+        return expr, value
+
 ops = [("add", "+", "+"),
        ("sub", "-", "-"),
        ("mul", "*", "*"),
