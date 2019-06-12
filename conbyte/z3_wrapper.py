@@ -10,8 +10,7 @@ from string import Template
 log = logging.getLogger("ct.z3_wrapper")
 
 class Z3Wrapper(object):
-    options = {"lan": "smt.string_solver=z3str3"}
-    options = {"stdin": "-in"}
+    options = {"lan": "smt.string_solver=z3str3", "stdin": "-in"}
     cnt = 0
 
     def __init__(self, query_store):
@@ -45,7 +44,6 @@ class Z3Wrapper(object):
         z3_cmd = "z3"
         for option in self.options:
             z3_cmd = z3_cmd + " " + self.options[option]
-
         model = None
 
         formulas = self._build_expr()
@@ -95,7 +93,8 @@ class Z3Wrapper(object):
                 else:
                     model[name] = int(value)
             else:
-                model[name] = value.replace("\"", "", 1).replace("\"", "", -1)
+                value = value.replace("\"", "", 1).replace("\"", "", -1)
+                model[name] = value
         return model
 
 

@@ -818,20 +818,21 @@ class Executor:
                 method_to_call = getattr(target, method)
                 mem_stack.push(method_to_call)
                 self.overwrite_method = True
+                log.debug("Load overwite: %s" % method)
             else:
                 # Pass in as self
                 if isinstance(target, ConcolicObject):
                     mem_stack.push(target)
                 self.overwrite_method = False
+                log.debug("Load outside: %s" % method)
             return
 
         elif instruct.opname is "CALL_METHOD":
             if self.overwrite_method:
                 argv = instruct.argval
                 args = []
-                while argv > 0:
+                for i in range(argv):
                     args.append(mem_stack.pop())
-                    argv -= 1
                 args.reverse()
                 method_to_call = mem_stack.pop()
                 mem_stack.push(method_to_call(*args))
@@ -850,8 +851,8 @@ class Executor:
                 log.error("Does not support genative step yet")
             args = []
             while argv > 0:
-                var = mem_stack.pop().value
-                if var < 0:
+                var = mem_stack.pop()
+                if var.value < 0:
                     log.error("Does not support genative step yet")
                 args.append(var)
                 argv -= 1

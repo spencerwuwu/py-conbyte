@@ -35,6 +35,11 @@ ops = [("add", "+", "+"),
        ("mul", "*", "*"),
        ("mod", "%", "mod"),
        ("div", "/", "div"),
+       ("radd", "+", "+"),
+       ("rsub", "-", "-"),
+       ("rmul", "*", "*"),
+       ("rmod", "%", "mod"),
+       ("rdiv", "/", "div"),
        ("floordiv", "//", "div"),
        ("and", "&", "&"),
        ("or", "|", "|"),
@@ -44,6 +49,8 @@ ops = [("add", "+", "+"),
 
 def make_method(method, op, op_smt):
     code = "def %s(self, other):\n" % method
+    code += "   if isinstance(other, int):\n"
+    code += "      other = ConcolicInteger(other)\n"
     code += "   value = self.value %s other.value\n" % op
     code += "   expr = [\"%s\", self.expr, other.expr]\n" % op_smt
     code += "   return ConcolicInteger(expr, value)"

@@ -70,12 +70,21 @@ class ConcolicStr(ConcolicType):
         return ConcolicType(expr, value)
 
     def get_slice(self, start=None, stop=None):
-        return ConcolicStr('\"' + self.value[start:stop] + '\"')
+        stop = ConcolicInteger(0) if stop is None else stop
+        start = ConcolicInteger(0) if start is None else start
+        value = self.value[start.value:stop.value]
+        expr = ["str.substr", self.expr, (stop-start+1).expr]
+        return ConcolicStr(expr, value)
 
     
-    def find(self, findstr, beg=0):
-        value = self.value.find(findstr.value, beg)
-        expr = ["str.indexof", self.expr, findstr.expr, beg]
+    def find(self, findstr, beg=ConcolicInteger(0), end=None):
+        if end is not None:
+            partial = self.get_slice(beg, end)
+            value = partial.value.find(findstr.value, beg.value, end.value)
+            expr = ["str.indexof", partial.expr, findstr.expr, beg.expr]
+        else:
+            value = self.value.find(findstr.value, beg.value)
+            expr = ["str.indexof", self.expr, findstr.expr, beg.expr]
         return ConcolicInteger(expr, value)
 
     def startswith(self, prefix):
