@@ -26,6 +26,7 @@ def main():
     # Logging configuration
     logging_group = OptionGroup(parser, "Logging Configuration")
     logging_group.add_option("--debug", dest='debug', action="store_true", help="Enable debugging log")
+    logging_group.add_option("-q", "--query", dest='query', action="store", help="Store smt queries", default=None)
 
     parser.add_option_group(logging_group)
     (options, args) = parser.parse_args()
@@ -47,7 +48,8 @@ def main():
     path = filename.replace(base_name, "")
     module = base_name.replace(".py", "")
     ini = __import__(options.inputs)
-    engine = ExplorationEngine(path, filename, module, options.entry, ini.INI_ARGS)
+    query = options.query
+    engine = ExplorationEngine(path, filename, module, options.entry, ini.INI_ARGS, query)
 
     engine.explore()
     

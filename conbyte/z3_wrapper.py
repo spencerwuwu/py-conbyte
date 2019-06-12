@@ -3,6 +3,7 @@ import sys
 import time
 import os
 from subprocess import Popen, PIPE, STDOUT
+from hashlib import sha224
 import subprocess
 from string import Template
 
@@ -11,13 +12,15 @@ log = logging.getLogger("ct.z3_wrapper")
 class Z3Wrapper(object):
     options = {"lan": "smt.string_solver=z3str3"}
     options = {"stdin": "-in"}
+    cnt = 0
 
-    def __init__(self):
+    def __init__(self, query_store):
         self.query = None
         self.asserts = None
         self.prefix = None
         self.ending = None
         self.variables = dict()
+        self.query_store = query_store
 
     def set_variables(self, variables):
         self.varables = variables
@@ -46,7 +49,15 @@ class Z3Wrapper(object):
         model = None
 
         formulas = self._build_expr()
-        log.debug("\n" + formulas)
+
+        # log.debug("\n" + formulas)
+        if self.query_store is not None:
+            #smthash = sha224(bytes(str(self.query), 'UTF-8')).hexdigest()
+            #filename = os.path.join(self.query_store, "{}.smt2".format(smthash))
+            filename = os.path.join(self.query_store, "{}.smt2".format(self.cnt))
+            self.cnt += 1
+            with open(filename, 'w') as f:
+                f.write(formulas)
 
         try:
             process = Popen(z3_cmd.split(" "), stdin=PIPE, stdout=PIPE, stderr=PIPE)

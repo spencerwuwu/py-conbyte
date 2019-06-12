@@ -1,3 +1,5 @@
+import logging
+
 from .utils import * 
 from .concolic_types.concolic_type import * 
 from .concolic_types.concolic_int import * 
@@ -5,6 +7,8 @@ from .concolic_types.concolic_str import *
 from .concolic_types.concolic_object import * 
 from .concolic_types.concolic_list import * 
 from .concolic_types.concolic_map import * 
+
+log = logging.getLogger("ct.executor")
 
 class Executor:
     def __init__(self, path):
@@ -17,6 +21,7 @@ class Executor:
         if instruct.offset > offset:
             frame.instructions.sanitize()
     
+    # Implement builtin range()
     def _do_range(self, argv, mem_stack):
         args = []
         for i in range(argv):
@@ -27,6 +32,25 @@ class Executor:
         for i in range(*args):
             r_list.append(ConcolicInteger(i))
         return r_list 
+
+    # Implement builtin sum()
+    def _do_sum(self, array):
+        ret = ConcolicInteger(0)
+        for element in array.value:
+            ret += element
+        return ret
+
+    # Implement builtin max()
+    def _do_max(self, a, b):
+        value = a.value if a.value > b.value else b.value
+        expr = ["ite", [">", a.expr, b.expr], a.expr, b.expr]
+        return ConcolicInteger(expr, value)
+
+    # Implement builtin min()
+    def _do_min(self, a, b):
+        value = a.value if a.value < b.value else b.value
+        expr = ["ite", ["<", a.expr, b.expr], a.expr, b.expr]
+        return ConcolicInteger(expr, value)
 
     def constant_compare(self, operator, val_l, val_r):
         if isinstance(val_l, str):
@@ -761,6 +785,17 @@ class Executor:
             elif func == "range":
                 range_list = self._do_range(argv, mem_stack)
                 mem_stack.push(range_list)
+            elif func == "sum":
+                value = self._do_sum(mem_stack.pop())
+                mem_stack.push(value)
+            elif func == "max":
+                b = mem_stack.pop()
+                a = mem_stack.pop()
+                mem_stack.push(self._do_max(a, b))
+            elif func == "min":
+                b = mem_stack.pop()
+                a = mem_stack.pop()
+                mem_stack.push(self._do_min(a, b))
             return
 
         elif instruct.opname is "CALL_FUNCTION_KW":

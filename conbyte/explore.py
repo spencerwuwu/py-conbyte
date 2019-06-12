@@ -22,7 +22,7 @@ def print_inst(obj):
 
 class ExplorationEngine:
 
-    def __init__(self, path, filename, module, entry, ini_vars):
+    def __init__(self, path, filename, module, entry, ini_vars, query_store):
         # Set up import environment
         sys.path.append(path)
         target_module = __import__(module)
@@ -34,7 +34,6 @@ class ExplorationEngine:
         self.trace_into = []
         self.functions = dict()
         self.get_members(target_module)
-        self.z3_wrapper = Z3Wrapper()
 
         self.ini_vars = ini_vars
         self.symbolic_inputs = None 
@@ -57,6 +56,13 @@ class ExplorationEngine:
         """
         self.trace_into.append("__init__")
         self.trace_into.append("__str__")
+
+        self.query_store = query_store
+        if self.query_store is not None:
+            if not os.path.isdir(self.query_store):
+                raise IOError("Query folder {} not found".format(self.query_store))
+
+        self.z3_wrapper = Z3Wrapper(query_store)
 
     def add_constraint(self, constraint):
         self.new_constraints.append(constraint)
