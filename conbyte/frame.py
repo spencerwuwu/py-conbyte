@@ -21,12 +21,16 @@ class Frame:
         self.globals = frame.f_globals
         self.locals = frame.f_locals
         self.instructions = Queue()
+        self.instructions_store = Queue()
+        self.all_instructs = []
         self.variables = dict()
         self.g_variables = dict()
         self.mem_stack = mem_stack
         self.enter_object = None
-        self.next_offset = 0            # For JUMP
-        self.stack_pointer = None       # For SETUP_LOOP
+        self.next_offset = None            # For JUMP
+
+        for instruct in dis.get_instructions(frame.f_code):
+            self.all_instructs.append(instruct)
         """
         print("global")
         for g_name in frame.f_globals:
@@ -88,4 +92,9 @@ class Frame:
             else:
                 # log.debug("         : skip")
                 continue
-
+    
+    def get_instruct(self, offset):
+        for instruct in self.all_instructs:
+            if instruct.offset == offset:
+                return instruct
+        return None

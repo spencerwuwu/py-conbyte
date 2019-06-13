@@ -25,6 +25,12 @@ class Stack:
         while not self.is_empty():
             self.pop()
 
+    def contains(self, target):
+        if target in self.stack:
+            return True
+        else:
+            return False
+
     def __str__(self):
         if len(self.stack) == 0:
             return "  Stack: nil"
@@ -59,6 +65,12 @@ class Queue:
     def sanitize(self):
         while not self.is_empty():
             self.pop()
+
+    def contains(self, target):
+        if target in self.queue:
+            return True
+        else:
+            return False
 
     def __str__(self):
         if len(self.queue) == 0:

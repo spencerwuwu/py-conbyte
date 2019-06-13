@@ -100,22 +100,26 @@ class ExplorationEngine:
                 dis.dis(obj)
 
     def execute_instructs(self, frame, func_name=None):
+        # Handle previous jump first
+        while frame.next_offset != None:
+            instruct = frame.get_instruct(frame.next_offset)
+            if frame.instructions_store.contains(instruct):
+                frame.next_offset = None
+                log.debug("** Back to instructions queue")
+                while instruct != frame.instructions_store.top():
+                    frame.instructions_store.pop()
+            else:
+                log.debug("** Pure counter control")
+                log.debug("- instr %s %s %s" % (instruct.opname, instruct.argval, instruct.argrepr))
+                self.executor.execute_instr(self.call_stack, instruct, func_name)
+
+        while not frame.instructions_store.is_empty():
+            frame.instructions.push(frame.instructions_store.pop())
         instructs = frame.instructions
         re = None
         while not instructs.is_empty():
             instruct = instructs.pop()
-            offset = frame.next_offset
-            if offset != 0:
-                if instruct.offset < offset:
-                    log.debug("on %s, Moving to offset %s" % (instruct.offset, offset))
-                    continue
-                elif instruct.offset == offset:
-                    log.debug("Reach offset %s" % offset)
-                    frame.next_offset = 0
-                else:
-                    log.debug("Reach offset %s" % offset)
-                    frame.next_offset = 0
-            log.debug(" - instr %s %s %s" % (instruct.opname, instruct.argval, instruct.argrepr))
+            log.debug("- instr %s %s %s" % (instruct.opname, instruct.argval, instruct.argrepr))
             if instruct.opname == "CALL_FUNCTION":
                 self.executor.execute_instr(self.call_stack, instruct, func_name)
                 return
@@ -159,14 +163,13 @@ class ExplorationEngine:
         co = frame.f_code
         func_name = co.co_name
         line_no = frame.f_lineno
-        filename = co.co_filename
-        log.debug(' + %s line %s' % (func_name, line_no))
-        c_frame = self.call_stack.top()
+        log.debug('+ %s line %s' % (func_name, line_no))
 
         instructions = self.get_line_instructions(line_no, dis.get_instructions(co))
 
+        c_frame = self.call_stack.top()
         for instruct in instructions:
-            c_frame.instructions.push(instruct)
+            c_frame.instructions_store.push(instruct)
             # print("   push", instruct.opname, instruct.argval, instruct.argrepr)
 
         is_return = self.execute_frame(func_name)

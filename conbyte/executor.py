@@ -18,6 +18,7 @@ class Executor:
     def _handle_jump(self, frame, instruct):
         offset = instruct.argval
         frame.next_offset = offset
+        frame.instructions.sanitize()
         """
         if instruct.offset > offset:
             frame.instructions.sanitize()
@@ -92,6 +93,9 @@ class Executor:
         mem_stack = c_frame.mem_stack
         variables = c_frame.variables
         g_variables = c_frame.g_variables
+
+        if c_frame.next_offset != None:
+            c_frame.next_offset += 2
 
 
         #
@@ -444,7 +448,7 @@ class Executor:
 
         elif instruct.opname is "POP_BLOCK":
             # TODO
-            log.warning("%s Not implemented" % instruct.opname)
+            # log.warning("%s Not implemented" % instruct.opname)
             return
 
         elif instruct.opname is "POP_EXCEPT":
@@ -680,7 +684,7 @@ class Executor:
                 mem_stack.push(value)
             else:
                 mem_stack.pop()
-                c_frame.next_offset = next_offset
+                self._handle_jump(c_frame, instruct)
             return
 
         elif instruct.opname is "LOAD_GLOBAL":
@@ -857,7 +861,7 @@ class Executor:
             args = []
             while argv > 0:
                 var = mem_stack.pop()
-                if var.value < 0:
+                if var is not None and var.value < 0:
                     log.error("Does not support genative step yet")
                 args.append(var)
                 argv -= 1
