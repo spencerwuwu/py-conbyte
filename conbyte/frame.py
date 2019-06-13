@@ -4,6 +4,8 @@ from .concolic_types.concolic_int import *
 from .concolic_types.concolic_str import * 
 from .concolic_types.concolic_object import * 
 
+import dis
+
 log = logging.getLogger("ct.frame")
 
 class Frame:
@@ -86,3 +88,4 @@ class Frame:
             else:
                 # log.debug("         : skip")
                 continue
+

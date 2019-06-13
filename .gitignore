@@ -25,3 +25,4 @@ $RECYCLE.BIN/
 .DS_Store
 
 queries/
+c_input.py

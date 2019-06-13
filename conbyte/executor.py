@@ -18,8 +18,10 @@ class Executor:
     def _handle_jump(self, frame, instruct):
         offset = instruct.argval
         frame.next_offset = offset
+        """
         if instruct.offset > offset:
             frame.instructions.sanitize()
+        """
     
     # Implement builtin range()
     def _do_range(self, argv, mem_stack):
@@ -90,6 +92,7 @@ class Executor:
         mem_stack = c_frame.mem_stack
         variables = c_frame.variables
         g_variables = c_frame.g_variables
+
 
         #
         # General instructions
@@ -672,7 +675,9 @@ class Executor:
         elif instruct.opname is "FOR_ITER":
             next_offset = instruct.argval
             if not mem_stack.top().is_empty():
-                mem_stack.push(mem_stack.top().pop())
+                value = mem_stack.top().pop()
+                log.debug("Iter: %s" % value)
+                mem_stack.push(value)
             else:
                 mem_stack.pop()
                 c_frame.next_offset = next_offset

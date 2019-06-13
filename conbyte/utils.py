@@ -25,6 +25,12 @@ class Stack:
         while not self.is_empty():
             self.pop()
 
+    def __str__(self):
+        if len(self.stack) == 0:
+            return "  Stack: nil"
+        return "  Stack: %s" % ",".join(val.__str__() for val in self.stack)
+
+
 class Queue:
     def __init__(self):
         self.queue = []
@@ -47,6 +53,14 @@ class Queue:
         else:
             return True
 
+    def top(self):
+        return self.queue[0]
+
     def sanitize(self):
         while not self.is_empty():
             self.pop()
+
+    def __str__(self):
+        if len(self.queue) == 0:
+            return "  Queue: nil"
+        return "  Queue: %s" % ",".join(val.__str__() for val in self.queue)

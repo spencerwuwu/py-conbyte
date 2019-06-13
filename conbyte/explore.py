@@ -107,8 +107,11 @@ class ExplorationEngine:
             offset = frame.next_offset
             if offset != 0:
                 if instruct.offset < offset:
-                    log.debug("Moving to offset %s" % offset)
+                    log.debug("on %s, Moving to offset %s" % (instruct.offset, offset))
                     continue
+                elif instruct.offset == offset:
+                    log.debug("Reach offset %s" % offset)
+                    frame.next_offset = 0
                 else:
                     log.debug("Reach offset %s" % offset)
                     frame.next_offset = 0
@@ -153,12 +156,13 @@ class ExplorationEngine:
         if event != 'line':
             return
 
-        c_frame = self.call_stack.top()
         co = frame.f_code
         func_name = co.co_name
         line_no = frame.f_lineno
         filename = co.co_filename
         log.debug(' + %s line %s' % (func_name, line_no))
+        c_frame = self.call_stack.top()
+
         instructions = self.get_line_instructions(line_no, dis.get_instructions(co))
 
         for instruct in instructions:
