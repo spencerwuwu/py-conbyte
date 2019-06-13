@@ -101,8 +101,10 @@ class ExplorationEngine:
 
     def execute_instructs(self, frame, func_name=None):
         # Handle previous jump first
+        re = None
         while frame.next_offset != None:
             instruct = frame.get_instruct(frame.next_offset)
+
             if frame.instructions_store.contains(instruct):
                 frame.next_offset = None
                 log.debug("** Back to instructions queue")
@@ -110,22 +112,27 @@ class ExplorationEngine:
                     frame.instructions_store.pop()
             else:
                 log.debug("** Pure counter control")
-                log.debug("- instr %s %s %s" % (instruct.opname, instruct.argval, instruct.argrepr))
-                self.executor.execute_instr(self.call_stack, instruct, func_name)
+                log.debug("- instr %s %s %s %s" % (instruct.offset, instruct.opname, instruct.argval, instruct.argrepr))
+                re = self.executor.execute_instr(self.call_stack, instruct, func_name)
+                if re:
+                    return re
 
         while not frame.instructions_store.is_empty():
             frame.instructions.push(frame.instructions_store.pop())
         instructs = frame.instructions
         re = None
+
         while not instructs.is_empty():
             instruct = instructs.pop()
-            log.debug("- instr %s %s %s" % (instruct.opname, instruct.argval, instruct.argrepr))
+            log.debug("- instr %s %s %s %s" % (instruct.offset, instruct.opname, instruct.argval, instruct.argrepr))
             if instruct.opname == "CALL_FUNCTION":
-                self.executor.execute_instr(self.call_stack, instruct, func_name)
-                return
+                re = self.executor.execute_instr(self.call_stack, instruct, func_name)
+                if re is None:
+                    return
             elif instruct.opname == "CALL_METHOD":
-                self.executor.execute_instr(self.call_stack, instruct, func_name)
-                return
+                re = self.executor.execute_instr(self.call_stack, instruct, func_name)
+                if re is None:
+                    return
             else:
                 re = self.executor.execute_instr(self.call_stack, instruct, func_name)
         return re

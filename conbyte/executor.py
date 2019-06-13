@@ -772,7 +772,6 @@ class Executor:
                 if isinstance(target, ConcolicList) or \
                    isinstance(target, ConcolicMap):
                     mem_stack.push(ConcolicInteger(target.size))
-                    return
                 function_to_call = getattr(target, func)
                 mem_stack.push(function_to_call())
             elif func == "str":
@@ -805,7 +804,9 @@ class Executor:
                 b = mem_stack.pop()
                 a = mem_stack.pop()
                 mem_stack.push(self._do_min(a, b))
-            return
+            else:
+                return
+            return False
 
         elif instruct.opname is "CALL_FUNCTION_KW":
             # TODO

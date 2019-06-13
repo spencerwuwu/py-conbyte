@@ -70,7 +70,7 @@ class ConcolicStr(ConcolicType):
         return ConcolicType(expr, value)
 
     def get_slice(self, start=None, stop=None):
-        stop = ConcolicInteger(0) if stop is None else stop
+        stop = self.len() if stop is None else stop
         start = ConcolicInteger(0) if start is None else start
         value = self.value[start.value:stop.value]
         expr = ["str.substr", self.expr, (stop-start+1).expr]
