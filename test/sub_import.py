@@ -1,4 +1,6 @@
 
+# Imported by call_obj.py
+
 import sub_sub_import
 
 class TheSubClass:

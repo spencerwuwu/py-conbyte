@@ -787,7 +787,7 @@ class Executor:
             elif func == "str":
                 target = mem_stack.pop()
                 if isinstance(target, ConcolicInteger):
-                    mem_stack.push(ConcolicStr(target.get_str()))
+                    mem_stack.push(ConcolicStr(*target.get_str()))
                 else:
                     mem_stack.push(str(target))
             elif func == "dict":

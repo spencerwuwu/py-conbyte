@@ -30,6 +30,11 @@ class PathToConstraint:
         if concolic_type.expr == 'nil':
             log.info("Skip nil")
             return
+
+        if isinstance(concolic_type.expr, bool):
+            # Pure bool type assignment is normally not codition branch
+            return
+
         p = Predicate(concolic_type, concolic_type.value)
         c = self.current_constraint.find_child(p)
         pneg = p.negate()

@@ -10,6 +10,8 @@ def list_dict(a, b):
     fir_d[a] = 2
 
     sec_d = dict()
-    sec_d[a] = 2
+    sec_d['a'] = 2
+    t = sec_d['a']
 
     thi_d = {a: 1, b: 2}
+

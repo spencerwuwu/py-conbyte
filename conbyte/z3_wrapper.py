@@ -53,9 +53,9 @@ class Z3Wrapper(object):
             #smthash = sha224(bytes(str(self.query), 'UTF-8')).hexdigest()
             #filename = os.path.join(self.query_store, "{}.smt2".format(smthash))
             filename = os.path.join(self.query_store, "{}.smt2".format(self.cnt))
-            self.cnt += 1
             with open(filename, 'w') as f:
                 f.write(formulas)
+
 
         try:
             process = Popen(z3_cmd.split(" "), stdin=PIPE, stdout=PIPE, stderr=PIPE)
@@ -66,19 +66,26 @@ class Z3Wrapper(object):
         log.debug("\n" + stdout.decode())
 
         output = stdout.decode()
-        if output is None:
+
+        if output is None or len(output) == 0:
             ret = "UNKNOWN"
         else:
             output = output.splitlines()
+            while "error" in output[0]:
+                output.pop(0)
             ret = output[0]
             if "unsat" in ret:
                 ret = "UNSAT"
             elif "sat" in ret:
                 ret = "SAT"
                 model = self._get_model(output[1:])
+            elif "timeout" in ret:
+                ret = "TIMEOUT"
             else:
                 ret = "UNKNOWN"
 
+        log.info("%s smt, Result: %s" % (self.cnt, ret))
+        self.cnt += 1
         return ret, model
 
 

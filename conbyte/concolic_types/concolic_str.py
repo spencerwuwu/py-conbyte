@@ -10,7 +10,7 @@ class ConcolicStr(ConcolicType):
         self.expr = expr
 
         if value is None:
-            self.value = expr.replace("\"", "", -1).replace("\"", "", -1)
+            self.value = expr.replace("\"", "", 1).replace("\"", "", -1)
         else:
             self.value = value
         log.debug("  ConStr, value: %s, expr: %s" % (self.value, self.expr))
@@ -73,7 +73,7 @@ class ConcolicStr(ConcolicType):
         stop = self.len() if stop is None else stop
         start = ConcolicInteger(0) if start is None else start
         value = self.value[start.value:stop.value]
-        expr = ["str.substr", self.expr, (stop-start+1).expr]
+        expr = ["str.substr", self.expr, start.expr, (stop-start+1).expr]
         return ConcolicStr(expr, value)
 
     

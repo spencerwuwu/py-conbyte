@@ -3,6 +3,7 @@ import os
 import logging
 import dis
 import inspect
+import traceback
 
 from .utils import * 
 from .function import *
@@ -42,6 +43,7 @@ class ExplorationEngine:
         self.solved_constraints = Queue()
         self.finished_constraints = []
         self.num_processed_constraints = 0
+        self.input_sets = []
 
         #dis.dis(target_module)
 
@@ -96,8 +98,8 @@ class ExplorationEngine:
                 # print_inst(obj)
                 self.trace_into.append(name)
                 self.functions[name] = Function(obj)
-                print("function ", name)
-                dis.dis(obj)
+                # print("function ", name)
+                # dis.dis(obj)
 
     def execute_instructs(self, frame, func_name=None):
         # Handle previous jump first
@@ -174,6 +176,8 @@ class ExplorationEngine:
 
         instructions = self.get_line_instructions(line_no, dis.get_instructions(co))
 
+        if self.call_stack.is_empty():
+            return
         c_frame = self.call_stack.top()
         for instruct in instructions:
             c_frame.instructions_store.push(instruct)
@@ -213,14 +217,14 @@ class ExplorationEngine:
         else:
             return False
 
-    def explore(self, max_iterations=0, timeout=None):
+    def explore(self, max_iterations=30, timeout=None):
         # First Execution
         self._one_execution(self.ini_vars)
         iterations = 1
 
         # TODO: Currently single thread
         while not self._is_exploration_complete():
-            if max_iterations != 0 and iterations >= max_iterations:
+            if max_iterations is not None and iterations >= max_iterations:
                 break
                 
             if not self.solved_constraints.is_empty():
@@ -235,13 +239,16 @@ class ExplorationEngine:
                     target = self.constraints_to_solve.pop()
                     log.debug("Solving: %s" % target)
                     asserts, query = target.get_asserts_and_query()
-                    ret, model = self.z3_wrapper.find_counter_example(asserts, query)
+                    ret, model = self.z3_wrapper.find_counter_example(asserts, query, timeout)
                     self.solved_constraints.push((target.id, ret, model))
                 continue
 
             if model is not None:
                 args = self._recordInputs(model)
-                self._one_execution(args, selected_constraint)
+                try:
+                    self._one_execution(args, selected_constraint)
+                except: 
+                    traceback.print_exec()
                 iterations += 1
                 self.num_processed_constraints += 1
             self.finished_constraints.append(selected_id)
@@ -274,4 +281,6 @@ class ExplorationEngine:
             constraint = self.new_constraints.pop()
             constraint.inputs = self._getInputs()
             self.constraints_to_solve.push(constraint)
+
+        self.input_sets.append(init_vars)
 
