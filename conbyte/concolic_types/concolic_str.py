@@ -109,12 +109,12 @@ class ConcolicStr(ConcolicType):
         if maxsplit == 0 or sep.value not in self.value:
             return ConcolicList([self])
         else:
-            sep_idx = self.find(sep).value
+            sep_idx = self.find(sep)
             if maxsplit is None:
-                return ConcolicList([self.get_slice(0, sep_idx)]) + \
+                return ConcolicList([self.get_slice(None, sep_idx)]) + \
                    ConcolicList(self.get_slice(sep_idx + 1).split(sep))
             else:
-                return ConcolicList([self.get_slice(0, sep_idx)]) + \
+                return ConcolicList([self.get_slice(None, sep_idx)]) + \
                    ConcolicList(self.get_slice(sep_idx + 1).split(sep, maxsplit - 1))
 
     def join(self, array):
