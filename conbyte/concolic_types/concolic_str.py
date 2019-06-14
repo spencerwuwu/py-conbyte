@@ -44,7 +44,7 @@ class ConcolicStr(ConcolicType):
         expr = ["str.to.int", self.expr]
         return ConcolicInteger(expr, value)
 
-    def get(self, index):
+    def get_index(self, index):
         if isinstance(index, int):
             index = ConcolicInteger(index, index)
         value = self.value[index.value]
@@ -61,7 +61,7 @@ class ConcolicStr(ConcolicType):
         queue = Queue()
         length = len(self.value)
         for i in range(length):
-            queue.push(self.get(i))
+            queue.push(self.get_index(i))
         return queue
 
     def contains(self, other):
@@ -176,6 +176,11 @@ class ConcolicStr(ConcolicType):
         value = self.value.strip(chars)
         return ConcolicStr('\"' + value + '\"')
 
+
+    def store(self, index, value):
+        if isinstance(index, ConcolicInteger):
+            index = index.value
+        self.value[index] = value
     
     # TODO
     """

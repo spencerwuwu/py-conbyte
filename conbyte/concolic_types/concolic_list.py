@@ -1,5 +1,6 @@
 from ..utils import *
 from .concolic_type import *
+from .concolic_int import *
 
 log = logging.getLogger("ct.con.list")
 
@@ -25,10 +26,14 @@ class ConcolicList(ConcolicType):
         self.size += 1
         log.debug("  List append: %s" % element)
 
-    def get(self, index=0):
+    def get_index(self, index=0):
         return self.value[index]
 
     def get_slice(self, start=None, stop=None):
+        if isinstance(start, ConcolicInteger):
+            start = start.value
+        if isinstance(stop, ConcolicInteger):
+            stop = stop.value
         return ConcolicList(self.value[start:stop])
 
     def get_iter(self):
@@ -58,3 +63,22 @@ class ConcolicList(ConcolicType):
 
     def __len__(self):
         return self.size
+
+    def len(self):
+        return self.size
+    
+    def multiply(self, mul):
+        if isinstance(mul, ConcolicInteger):
+            mul = mul.value
+        array = []
+        for i in range(mul):
+            for value in self.value:
+                array.append(value)
+
+        return ConcolicList(array)
+
+    def store(self, index, value):
+        if isinstance(index, ConcolicInteger):
+            index = index.value
+
+        self.value[index] = value

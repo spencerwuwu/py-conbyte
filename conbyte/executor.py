@@ -14,6 +14,7 @@ class Executor:
     def __init__(self, path):
         self.path = path
         self.overwrite_method = False
+        self.build_slice = False
 
     def _handle_jump(self, frame, instruct):
         offset = instruct.argval
@@ -177,10 +178,14 @@ class Executor:
             return
 
         elif instruct.opname is "BINARY_MULTIPLY":
-            multiplicand = mem_stack.pop()
-            multiplier = mem_stack.pop()
-            result = multiplicand * multiplier
-            mem_stack.push(result)
+            tos = mem_stack.pop()
+            tos1 = mem_stack.pop()
+            if isinstance(tos1, ConcolicList):
+                mem_stack.push(tos1.multiply(tos))
+
+            else:
+                result = tos1 * tos
+                mem_stack.push(result)
 
         elif instruct.opname is "BINARY_MATRIX_MULTIPLY":
             # TODO: 
@@ -206,9 +211,9 @@ class Executor:
             mem_stack.push(result)
 
         elif instruct.opname is "BINARY_ADD":
-            addend = mem_stack.pop()
-            augend = mem_stack.pop()
-            result = augend + addend
+            tos = mem_stack.pop()
+            tos1 = mem_stack.pop()
+            result = tos1 + tos
             mem_stack.push(result)
 
         elif instruct.opname is "BINARY_SUBTRACT":
@@ -218,18 +223,23 @@ class Executor:
             mem_stack.push(result)
 
         elif instruct.opname is "BINARY_SUBSCR":
+            if self.build_slice is True:
+                self.build_slice = False
+                return
             tos = mem_stack.pop()
-            if isinstance(tos, ConcolicInteger):
+            if isinstance(tos, ConcolicInteger) or \
+               isinstance(tos, ConcolicStr):
                 index = tos.value
                 target_list = mem_stack.pop()
-                mem_stack.push(target_list.get(index))
+                mem_stack.push(target_list.get_index(index))
             elif isinstance(tos, int):
                 index = tos
                 target_list = mem_stack.pop()
-                mem_stack.push(target_list.get(index))
+                mem_stack.push(target_list.get_index(index))
             else:
                 # Sliced object (Hopefully)
                 mem_stack.push(tos)
+                print("Yes")
 
         elif instruct.opname is "BINARY_LSHIFT":
             to = mem_stack.pop()
@@ -869,6 +879,7 @@ class Executor:
             args.reverse()
             target = mem_stack.pop()
             mem_stack.push(target.get_slice(*args))
+            self.build_slice = True
 
         elif instruct.opname is "EXTENDED_ARG":
             # TODO

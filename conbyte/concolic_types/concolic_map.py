@@ -1,5 +1,7 @@
 from ..utils import *
 from .concolic_type import *
+from .concolic_int import *
+from .concolic_str import *
 
 log = logging.getLogger("ct.con.map")
 
@@ -24,7 +26,16 @@ class ConcolicMap(ConcolicType):
             return "  Map: nil"
         return "  Map: %s" % ",".join("<%s: %s>" % (name.__str__(), val.__str__()) for name, val in self.value.items())
 
-    def get(self, name):
+    def get(self, key, default=None):
+        if key.value in self.value:
+            return self.get_index(key)
+        else:
+            return default
+
+    def get_index(self, name):
+        if isinstance(name, ConcolicInteger) or \
+           isinstance(name, ConcolicStr):
+            name = name.value
         return self.value[name]
 
     def get_iter(self):
