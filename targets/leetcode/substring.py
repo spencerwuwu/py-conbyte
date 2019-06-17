@@ -25,3 +25,4 @@ def substring(s: str) -> int:
     return max_len
 
 
+print(substring("oi"))

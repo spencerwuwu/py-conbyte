@@ -24,6 +24,7 @@ py-conbyte currently supports:
   - `sum()`
   - `max()`
   - `min()`
+  - `abs()`
 - Types: 
   - Integer
   - String
@@ -58,6 +59,11 @@ Options:
                         Store smt queries
     -l LOGFILE, --logfile=LOGFILE
                         Store log
+
+  Solver Configuration:
+    -s SOLVER_TYPE, --solver=SOLVER_TYPE
+                        Solver=[z3, cvc4], default is z3
+
 ```
 
 example:

@@ -30,11 +30,20 @@ def main():
     logging_group.add_option("-d", "--debug", dest='debug', action="store_true", help="Enable debugging log")
     logging_group.add_option("-q", "--query", dest='query', action="store", help="Store smt queries", default=None)
     logging_group.add_option("-l", "--logfile", dest='logfile', action="store", help="Store log", default=None)
-
     parser.add_option_group(logging_group)
+
+    # Solver configuration
+    solver_group = OptionGroup(parser, "Solver Configuration")
+    solver_group.add_option("-s", "--solver", dest='solver_type', action="store", help="Solver=[z3, cvc4], default is z3", default="z3")
+    parser.add_option_group(solver_group)
+
     (options, args) = parser.parse_args()
     if len(args) == 0 or not os.path.exists(args[0]):
         parser.error("Missing app to execute")
+        sys.exit(1)
+
+    if options.solver_type != "z3" and options.solver_type != "cvc4":
+        parser.error("Solver can only be z3 or cvc4")
         sys.exit(1)
 
     if options.debug:
@@ -57,7 +66,7 @@ def main():
     module = base_name.replace(".py", "")
     ini = __import__(options.inputs)
     query = options.query
-    engine = ExplorationEngine(path, filename, module, options.entry, ini.INI_ARGS, query)
+    engine = ExplorationEngine(path, filename, module, options.entry, ini.INI_ARGS, query, options.solver_type)
 
     engine.explore(options.iteration, options.timeout)
 

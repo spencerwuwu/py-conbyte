@@ -43,7 +43,7 @@ class ConcolicList(ConcolicType):
         return queue
 
     def contains(self, other):
-        return ConcolicType('nil', None)
+        return ConcolicType('nil', other.value in self.value)
 
     def __str__(self):
         if self.size == 0:

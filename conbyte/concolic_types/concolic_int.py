@@ -30,22 +30,27 @@ class ConcolicInteger(ConcolicType):
         expr = ["int.to.str", self.expr]
         return expr, value
 
+    def do_abs(self):
+        value = abs(self.value)
+        expr = ["ite", [">=", self.expr, 0], self.expr, ["-", 0, self.expr]]
+        return ConcolicInteger(expr, value)
+
 ops = [("add", "+", "+"),
        ("sub", "-", "-"),
        ("mul", "*", "*"),
        ("mod", "%", "mod"),
-       ("div", "/", "div"),
+       ("truediv", "/", "div"),
        ("radd", "+", "+"),
        ("rsub", "-", "-"),
        ("rmul", "*", "*"),
        ("rmod", "%", "mod"),
-       ("rdiv", "/", "div"),
+       ("rtruediv", "/", "div"),
        ("floordiv", "//", "div"),
        ("and", "&", "&"),
        ("or", "|", "|"),
        ("xor", "^", "^"),
-       ("lshift", "<<", "<<"),
-       ("rshift", ">>", ">>")]
+       ("lshift", "<<", "bvshl"),
+       ("rshift", ">>", "bcshr")]
 
 def make_method(method, op, op_smt):
     code = "def %s(self, other):\n" % method

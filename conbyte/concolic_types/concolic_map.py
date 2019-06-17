@@ -45,7 +45,13 @@ class ConcolicMap(ConcolicType):
         return queue
 
     def store(self, name, val):
+        if isinstance(name, ConcolicInteger) or \
+           isinstance(name, ConcolicStr):
+            name = name.value
         if name not in self.value:
             self.size += 1
         self.value[name] = val
         log.debug("  Map store: <%s: %s>" % (name, val))
+
+    def contains(self, other):
+        return ConcolicType('nil', other.value in self.value)

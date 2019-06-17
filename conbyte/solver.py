@@ -7,19 +7,31 @@ from hashlib import sha224
 import subprocess
 from string import Template
 
-log = logging.getLogger("ct.z3_wrapper")
+log = logging.getLogger("ct.solver")
 
-class Z3Wrapper(object):
+class Solver(object):
     options = {"lan": "smt.string_solver=z3str3", "stdin": "-in"}
+    cvc_options = ["--produce-models", "--lang", "smt", "--strings-exp", "--quiet"]
     cnt = 0
 
-    def __init__(self, query_store):
+    def __init__(self, query_store, solver_type):
         self.query = None
         self.asserts = None
         self.prefix = None
         self.ending = None
         self.variables = dict()
         self.query_store = query_store
+        self.solver_type = solver_type
+
+        if solver_type == "z3":
+            self.cmd = "z3"
+            for option in self.options:
+                self.cmd = self.cmd + " " + self.options[option]
+        else:
+            self.cmd = "cvc4"
+            for option in self.cvc_options:
+                self.cmd = self.cmd + " " + option
+
 
     def set_variables(self, variables):
         self.varables = variables
@@ -29,22 +41,24 @@ class Z3Wrapper(object):
 
     def find_counter_example(self, asserts, query, timeout=None):
         start_time = time.process_time()
-        if timeout is not None:
-            self.options["timeout"] = "-T:" + str(timeout)
+        if self.solver_type == "z3":
+            if timeout is not None:
+                cmd = self.cmd + " -T:" + str(timeout)
+            else:
+                cmd = self.cmd + " -T:15"
         else:
-            self.options["timeout"] = "-T:15"
+            if timeout is not None:
+                cmd = self.cmd + ("--tlimit=%s" % (timeout * 1000))
+            else:
+                cmd = self.cmd + " --tlimit=15000"
         self.asserts = asserts
         self.query = query
-        result, model = self._find_model()
+        result, model = self._find_model(cmd)
         endtime = time.process_time()
         solve_time = endtime - start_time
         return result, model
 
-    def _find_model(self):
-        z3_cmd = "z3"
-        for option in self.options:
-            z3_cmd = z3_cmd + " " + self.options[option]
-        model = None
+    def _find_model(self, cmd):
 
         formulas = self._build_expr()
 
@@ -56,9 +70,9 @@ class Z3Wrapper(object):
             with open(filename, 'w') as f:
                 f.write(formulas)
 
-
+        model = None
         try:
-            process = Popen(z3_cmd.split(" "), stdin=PIPE, stdout=PIPE, stderr=PIPE)
+            process = Popen(cmd, shell=True, stdin=PIPE, stdout=PIPE, stderr=PIPE)
         except subprocess.CalledProcessError as e:
             print(e.output)
 

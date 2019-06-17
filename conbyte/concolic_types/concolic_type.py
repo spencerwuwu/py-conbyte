@@ -66,6 +66,24 @@ class ConcolicType(object):
         else:
             return self.eq_worker(self.expr, other.expr)
 
+    # TODO
+    def __or__(self, other):
+        value = self.value | other.value
+        expr = ["and", self.expr, other.expr]
+        return ConcolicType(expr, value)
+
+    # TODO
+    def __xor__(self, other):
+        value = self.value ^ other.value
+        expr = ["xor", self.expr, other.expr]
+        return ConcolicType(expr, value)
+
+    # TODO
+    def __and__(self, other):
+        value = self.value & other.value
+        expr = ["and", self.expr, other.expr]
+        return ConcolicType(expr, value)
+
     # For bool type
     def negate(self):
         self.value = not self.value

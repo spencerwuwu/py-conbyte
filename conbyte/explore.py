@@ -12,7 +12,7 @@ from .executor import *
 from .path_to_constraint import *
 
 from .concolic_types import concolic_type
-from .z3_wrapper import Z3Wrapper
+from .solver import Solver 
 
 log = logging.getLogger("ct.explore")
 
@@ -23,7 +23,7 @@ def print_inst(obj):
 
 class ExplorationEngine:
 
-    def __init__(self, path, filename, module, entry, ini_vars, query_store):
+    def __init__(self, path, filename, module, entry, ini_vars, query_store, solver_type):
         # Set up import environment
         sys.path.append(path)
         target_module = __import__(module)
@@ -64,7 +64,7 @@ class ExplorationEngine:
             if not os.path.isdir(self.query_store):
                 raise IOError("Query folder {} not found".format(self.query_store))
 
-        self.z3_wrapper = Z3Wrapper(query_store)
+        self.solver = Solver(query_store, solver_type)
 
     def add_constraint(self, constraint):
         self.new_constraints.append(constraint)
@@ -205,7 +205,7 @@ class ExplorationEngine:
                 current_frame.set_locals(self.call_stack.top().mem_stack, False)
         else:
             self.symbolic_inputs = current_frame.init_locals()
-            self.z3_wrapper.set_variables(self.symbolic_inputs)
+            self.solver.set_variables(self.symbolic_inputs)
         # current_frame.set_local()
         self.call_stack.push(current_frame)
         return self.trace_lines
@@ -239,7 +239,7 @@ class ExplorationEngine:
                     target = self.constraints_to_solve.pop()
                     log.debug("Solving: %s" % target)
                     asserts, query = target.get_asserts_and_query()
-                    ret, model = self.z3_wrapper.find_counter_example(asserts, query, timeout)
+                    ret, model = self.solver.find_counter_example(asserts, query, timeout)
                     self.solved_constraints.push((target.id, ret, model))
                 continue
 
@@ -248,7 +248,7 @@ class ExplorationEngine:
                 try:
                     self._one_execution(args, selected_constraint)
                 except: 
-                    traceback.print_exec()
+                    traceback.print_exc()
                 iterations += 1
                 self.num_processed_constraints += 1
             self.finished_constraints.append(selected_id)

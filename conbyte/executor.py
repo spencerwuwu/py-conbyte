@@ -198,7 +198,7 @@ class Executor:
             result = dividend // divisor
             mem_stack.push(result)
 
-        elif instruct.opname is "BINARY_DIVIDE":
+        elif instruct.opname is "BINARY_TRUE_DIVIDE":
             divisor = mem_stack.pop()
             dividend = mem_stack.pop()
             result = dividend / divisor
@@ -297,7 +297,7 @@ class Executor:
             result = dividend // divisor
             mem_stack.push(result)
 
-        elif instruct.opname is "INPLACE_DIVIDE":
+        elif instruct.opname is "INPLACE_TRUE_DIVIDE":
             divisor = mem_stack.pop()
             dividend = mem_stack.pop()
             result = dividend / divisor
@@ -562,7 +562,14 @@ class Executor:
             mem_stack.push(new_list)
 
         elif instruct.opname is "BUILD_MAP":
-            mem_stack.push(ConcolicMap())
+            size = instruct.argval
+            new_map = ConcolicMap()
+            while size > 0:
+                size -= 1
+                tos = mem_stack.pop()
+                tos1 = mem_stack.pop()
+                new_map.store(tos1, tos)
+            mem_stack.push(new_map)
             return
 
         elif instruct.opname is "BUILD_CONST_KEY_MAP":
@@ -791,15 +798,18 @@ class Executor:
                 else:
                     mem_stack.push(str(target))
             elif func == "dict":
-                mem_stack.push(ConcolicMap())
-                # TODO
-                if argv != 0:
-                    log.warrning("Not implemented: dict(<with args>)")
+                if argv == 0:
+                    new_list = ConcolicMap()
+                    mem_stack.push(new_list)
+                else:
+                    mem_stack.push(mem_stack.pop())
             elif func == "list":
-                new_list = ConcolicList()
-                for i in range(argv):
-                    new_list.append(mem_stack.pop())
-                mem_stack.push(new_list)
+                if argv == 0:
+                    new_list = ConcolicList()
+                    mem_stack.push(new_list)
+                else:
+                    mem_stack.push(mem_stack.pop())
+
             elif func == "range":
                 range_list = self._do_range(argv, mem_stack)
                 mem_stack.push(range_list)
@@ -814,6 +824,9 @@ class Executor:
                 b = mem_stack.pop()
                 a = mem_stack.pop()
                 mem_stack.push(self._do_min(a, b))
+            elif func == "abs":
+                t = mem_stack.pop()
+                mem_stack.push(t.do_abs())
             else:
                 return
             return False
