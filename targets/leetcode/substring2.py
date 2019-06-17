@@ -25,4 +25,4 @@ def substring2(s: str) -> int:
     else:
         return max_len
 
-print(substring2('quiaaaaaaaaaac')) # input generated for substring.py
+print(substring2('quiaaaaaaaaaac')) # pragma: no cover

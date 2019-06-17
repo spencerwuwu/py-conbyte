@@ -18,4 +18,4 @@ def add_binary(a, b):
         res = '1' + res
     return res
 
-print(add_binary("10111", "111"))
+print(add_binary("10111", "111"))   # pragma: no cover

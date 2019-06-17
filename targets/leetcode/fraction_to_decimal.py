@@ -29,4 +29,4 @@ def fraction_to_decimal(numerator, denominator):
         remainder %= divisor
     return fraction
 
-print(fraction_to_decimal(-50, 8))
+print(fraction_to_decimal(-50, 8))  # pragma: no cover

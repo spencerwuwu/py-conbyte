@@ -15,4 +15,4 @@ def simplify_path(path):
                 result.append(pos)
     return '/'+'/'.join(result)
 
-print(simplify_path("../../a/../../bcd/ef"))
+print(simplify_path("../../a/../../bcd/ef"))    # pragma: no cover

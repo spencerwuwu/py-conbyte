@@ -71,9 +71,11 @@ def main():
     engine.explore(options.iteration, options.timeout)
 
     print()
-    print("Results")
+    print("Generated inputs")
     for inputs in engine.input_sets:
         print(inputs)
+
+    engine.calculate_coverage()
     
 
 if __name__ == '__main__':

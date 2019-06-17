@@ -16,6 +16,6 @@ def ransomNote(ransomNote, magazine):
             return False
     return True
 
-print(ransomNote("aa", "aab"))
-print(ransomNote("aa", "ab"))
-print(ransomNote("a", "b"))
+print(ransomNote("aa", "aab"))  # pragma: no cover
+print(ransomNote("aa", "ab"))   # pragma: no cover
+print(ransomNote("a", "b"))     # pragma: no cover

@@ -17,4 +17,4 @@ def is_palindrome(x):
         div /= 100
     return True
 
-print(is_palindrome(1001))
+print(is_palindrome(1001))  # pragma: no cover

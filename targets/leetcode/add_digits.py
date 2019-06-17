@@ -11,4 +11,4 @@ def add_digits(num):
 
 
 
-print(add_digits(38))
+print(add_digits(38))   # pragma: no cover

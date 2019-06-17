@@ -17,4 +17,4 @@ def g_triangle(numRows):
                 result[i][j] = result[i - 1][j - 1] + result[i - 1][j]
     return result
 
-print(g_triangle(5))
+print(g_triangle(5))    # pragma: no cover

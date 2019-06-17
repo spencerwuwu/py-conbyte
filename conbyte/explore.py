@@ -5,6 +5,8 @@ import dis
 import inspect
 import traceback
 
+import coverage
+
 from .utils import * 
 from .function import *
 from .frame import *
@@ -44,6 +46,8 @@ class ExplorationEngine:
         self.finished_constraints = []
         self.num_processed_constraints = 0
         self.input_sets = []
+
+        self.global_execution_coverage = coverage.CoverageData()
 
         #dis.dis(target_module)
 
@@ -275,7 +279,6 @@ class ExplorationEngine:
         sys.settrace(self.trace_calls)
         ret = execute(*init_vars)
         sys.settrace(None)
-        print("Return: ", ret)
 
         while len(self.new_constraints) > 0:
             constraint = self.new_constraints.pop()
@@ -283,4 +286,30 @@ class ExplorationEngine:
             self.constraints_to_solve.push(constraint)
 
         self.input_sets.append(init_vars)
+
+    def calculate_coverage(self):
+        execute = self.functions[self.entry].obj
+        cov = coverage.Coverage(branch=True)
+
+        for args in self.input_sets:
+            cov.start()
+            ret = execute(*args)
+            cov.stop()
+            self.global_execution_coverage.update(cov.get_data())
+
+        total_lines, executed_lines, executed_branches = self.coverage_statistics()
+        print("Line coverage {}/{} ({:.2%})".format(executed_lines, total_lines, (executed_lines/total_lines) if total_lines > 0 else 0))
+        print("Branch coverage {}".format(executed_branches))
+
+    def coverage_statistics(self):
+        cov = coverage.Coverage(omit=["*pyexz3.py", "*symbolic*", "*pydev*", "*coverage*"], branch=True)
+        total_lines = 0
+        executed_lines = 0
+        executed_branches = 0
+        for file in self.global_execution_coverage.measured_files():
+            _, executable_lines, _, _ = cov.analysis(file)
+            total_lines += len(set(executable_lines))
+            executed_lines += len(set(self.global_execution_coverage.lines(file)))
+            executed_branches += len(set(self.global_execution_coverage.arcs(file)))
+        return total_lines, executed_lines, executed_branches
 

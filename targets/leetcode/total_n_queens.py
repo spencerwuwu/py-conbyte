@@ -30,4 +30,4 @@ def total_n_queens(a):
     s = Solution()
     return s.totalNQueens(a)
 
-print(total_n_queens(4))
+print(total_n_queens(4))    # pragma: no cover

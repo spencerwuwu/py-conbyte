@@ -27,5 +27,5 @@ def count_say(n):
         n -= 1
     return x
 
-print(count_say(1))
-print(count_say(4))
+print(count_say(1)) # pragma: no cover
+print(count_say(4)) # pragma: no cover
