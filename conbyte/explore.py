@@ -4,6 +4,7 @@ import logging
 import dis
 import inspect
 import traceback
+import json
 
 import coverage
 
@@ -257,6 +258,8 @@ class ExplorationEngine:
                 self.num_processed_constraints += 1
             self.finished_constraints.append(selected_id)
 
+        self.execute_coverage()
+
     def _getInputs(self):
         return self.symbolic_inputs.copy()
 
@@ -269,7 +272,7 @@ class ExplorationEngine:
 
 
     def _one_execution(self, init_vars, expected_path=None):
-        print("Inputs: " + str(init_vars))
+        log.info("Inputs: " + str(init_vars))
 
         self.call_stack.sanitize()
         self.mem_stack.sanitize()
@@ -279,6 +282,7 @@ class ExplorationEngine:
         sys.settrace(self.trace_calls)
         ret = execute(*init_vars)
         sys.settrace(None)
+        log.info("Return: %s" % ret)
 
         while len(self.new_constraints) > 0:
             constraint = self.new_constraints.pop()
@@ -287,29 +291,44 @@ class ExplorationEngine:
 
         self.input_sets.append(init_vars)
 
-    def calculate_coverage(self):
+
+    def execute_coverage(self):
         execute = self.functions[self.entry].obj
         cov = coverage.Coverage(branch=True)
-
         for args in self.input_sets:
             cov.start()
             ret = execute(*args)
             cov.stop()
             self.global_execution_coverage.update(cov.get_data())
 
+
+    def print_coverage(self):
         total_lines, executed_lines, executed_branches = self.coverage_statistics()
         print("Line coverage {}/{} ({:.2%})".format(executed_lines, total_lines, (executed_lines/total_lines) if total_lines > 0 else 0))
         print("Branch coverage {}".format(executed_branches))
 
+
     def coverage_statistics(self):
-        cov = coverage.Coverage(omit=["*pyexz3.py", "*symbolic*", "*pydev*", "*coverage*"], branch=True)
+        cov = coverage.Coverage(branch=True)
         total_lines = 0
         executed_lines = 0
         executed_branches = 0
         for file in self.global_execution_coverage.measured_files():
             _, executable_lines, _, _ = cov.analysis(file)
-            total_lines += len(set(executable_lines))
+
+            # total_lines -1 to discard the 'def xx():' line
+            total_lines += (len(set(executable_lines)) - 1)
             executed_lines += len(set(self.global_execution_coverage.lines(file)))
             executed_branches += len(set(self.global_execution_coverage.arcs(file)))
         return total_lines, executed_lines, executed_branches
+
+    def result_to_json(self):
+        res = dict()
+        res["inputs"] = self.input_sets
+        total_lines, executed_lines, executed_branches = self.coverage_statistics()
+        res["total_lines"] = total_lines
+        res["executed_lines"] = executed_lines
+        res["executed_branches"] = executed_branches
+
+        return json.dumps(res)
 

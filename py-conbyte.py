@@ -19,7 +19,8 @@ def main():
 
     # Setup
     setup_group = OptionGroup(parser, "Exploration Setup")
-    setup_group.add_option("-i", "--input", dest="inputs", action="store", help="Specify initial inputs, default to \'inputs\'", default="inputs")
+    setup_group.add_option("-i", "--input", dest="inputs", action="store", help="Specify initial inputs, default to \'./inputs.py\'", default="./inputs.py")
+    setup_group.add_option("--stdin", dest="from_stdin", action="store_true", help="Read inputs from stdin instead of a file")
     setup_group.add_option("-e", "--entry", dest="entry", action="store", help="Specify entry point, if different than (target).py", default=None)
     setup_group.add_option("-m", "--max_iter", dest="iteration", action="store", help="Specify max iterations", default=None)
     setup_group.add_option("-t", "--timeout", dest="timeout", action="store", help="Specify solver timeout", default=None)
@@ -27,14 +28,15 @@ def main():
 
     # Logging configuration
     logging_group = OptionGroup(parser, "Logging Configuration")
-    logging_group.add_option("-d", "--debug", dest='debug', action="store_true", help="Enable debugging log")
+    logging_group.add_option("-d", "--debug", dest='debug', action="store_true", help="Enable debug logging")
     logging_group.add_option("-q", "--query", dest='query', action="store", help="Store smt queries", default=None)
     logging_group.add_option("-l", "--logfile", dest='logfile', action="store", help="Store log", default=None)
+    logging_group.add_option("--json", dest='get_json', action="store_true", help="Print JSON format to stdout", default=None)
     parser.add_option_group(logging_group)
 
     # Solver configuration
     solver_group = OptionGroup(parser, "Solver Configuration")
-    solver_group.add_option("-s", "--solver", dest='solver_type', action="store", help="Solver=[z3, cvc4], default is z3", default="z3")
+    solver_group.add_option("-s", "--solver", dest='solver_type', action="store", help="Solver=[z3, cvc4], default to z3", default="z3")
     parser.add_option_group(solver_group)
 
     (options, args) = parser.parse_args()
@@ -57,25 +59,40 @@ def main():
                             format='%(asctime)s  %(name)s\t%(levelname)s\t%(message)s', 
                             datefmt = '%m/%d/%Y %I:%M:%S %p')
     else:
-        logging.basicConfig(filename=options.logfile, level=log_level, 
-                            format='  %(name)s\t%(levelname)s\t%(message)s')
+        if options.get_json:
+            logging.basicConfig(filename="/dev/null", level=log_level, 
+                                format='  %(name)s\t%(levelname)s\t%(message)s')
+        else:
+            logging.basicConfig(level=log_level, 
+                                format='  %(name)s\t%(levelname)s\t%(message)s')
 
     base_name = os.path.basename(args[0])
     filename = os.path.abspath(args[0])
     path = filename.replace(base_name, "")
     module = base_name.replace(".py", "")
-    ini = __import__(options.inputs)
     query = options.query
-    engine = ExplorationEngine(path, filename, module, options.entry, ini.INI_ARGS, query, options.solver_type)
+
+    inputs_space = {}
+    if options.from_stdin:
+        exec(sys.stdin.read(), inputs_space)
+    else:
+        inputs_file = options.inputs
+        inputs_file_full = os.path.abspath(options.inputs)
+        exec(open(inputs_file_full).read(), inputs_space)
+
+    engine = ExplorationEngine(path, filename, module, options.entry, inputs_space["INI_ARGS"], query, options.solver_type)
 
     engine.explore(options.iteration, options.timeout)
 
-    print()
-    print("Generated inputs")
-    for inputs in engine.input_sets:
-        print(inputs)
+    if not options.get_json:
+        print()
+        print("Generated inputs")
+        for inputs in engine.input_sets:
+            print(inputs)
+        engine.print_coverage()
+    else:
+        print(engine.result_to_json())
 
-    engine.calculate_coverage()
     
 
 if __name__ == '__main__':

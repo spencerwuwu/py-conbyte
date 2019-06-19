@@ -1,15 +1,7 @@
 
 def do_numbers(a, b):
-    d = 1 if a > b else -2
-    if a > d:
-        c = a + b
+    c = 100 if a > b else 0
+    if c > a:
+        return a
     else:
-        c = a - b
-    if c > 100:
-        if a > b:
-            return 0
-        else:
-            return 2
-    else:
-        return 1
-    return c
+        return b

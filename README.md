@@ -45,7 +45,8 @@ Options:
 
   Exploration Setup:
     -i INPUTS, --input=INPUTS
-                        Specify initial inputs, default to 'inputs'
+                        Specify initial inputs, default to './inputs.py'
+    --stdin             Read inputs from stdin instead of a file
     -e ENTRY, --entry=ENTRY
                         Specify entry point, if different than (target).py
     -m ITERATION, --max_iter=ITERATION
@@ -54,16 +55,16 @@ Options:
                         Specify solver timeout
 
   Logging Configuration:
-    -d, --debug         Enable debugging log
+    -d, --debug         Enable debug logging
     -q QUERY, --query=QUERY
                         Store smt queries
     -l LOGFILE, --logfile=LOGFILE
                         Store log
+    --json              Print JSON format to stdout
 
   Solver Configuration:
     -s SOLVER_TYPE, --solver=SOLVER_TYPE
-                        Solver=[z3, cvc4], default is z3
-
+                        Solver=[z3, cvc4], default to z3
 ```
 
 example:
