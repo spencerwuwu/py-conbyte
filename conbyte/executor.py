@@ -8,6 +8,8 @@ from .concolic_types.concolic_object import *
 from .concolic_types.concolic_list import * 
 from .concolic_types.concolic_map import * 
 
+from .regex import *
+
 log = logging.getLogger("ct.executor")
 
 class Executor:
@@ -852,6 +854,12 @@ class Executor:
                 mem_stack.push(method_to_call)
                 self.overwrite_method = True
                 log.debug("Load overwite: %s" % method)
+            elif target == "re" and method == "compile":
+                new_re = Regex()
+                method_to_call = getattr(new_re, method)
+                mem_stack.push(method_to_call)
+                self.overwrite_method = True
+                log.debug("Load Regex: %s" % method)
             else:
                 # Pass in as self
                 if isinstance(target, ConcolicObject):

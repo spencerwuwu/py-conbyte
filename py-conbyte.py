@@ -30,6 +30,7 @@ def main():
     logging_group = OptionGroup(parser, "Logging Configuration")
     logging_group.add_option("-d", "--debug", dest='debug', action="store_true", help="Enable debug logging")
     logging_group.add_option("-q", "--query", dest='query', action="store", help="Store smt queries", default=None)
+    logging_group.add_option("--quiet", dest='quiet', action="store_true", help="No logging")
     logging_group.add_option("-l", "--logfile", dest='logfile', action="store", help="Store log", default=None)
     logging_group.add_option("--json", dest='get_json', action="store_true", help="Print JSON format to stdout", default=None)
     parser.add_option_group(logging_group)
@@ -58,6 +59,8 @@ def main():
         logging.basicConfig(filename=options.logfile, level=log_level, 
                             format='%(asctime)s  %(name)s\t%(levelname)s\t%(message)s', 
                             datefmt = '%m/%d/%Y %I:%M:%S %p')
+    elif options.quiet:
+        logging.basicConfig(filename="/dev/null")
     else:
         if options.get_json:
             logging.basicConfig(filename="/dev/null", level=log_level, 
@@ -83,6 +86,9 @@ def main():
     engine = ExplorationEngine(path, filename, module, options.entry, inputs_space["INI_ARGS"], query, options.solver_type)
 
     engine.explore(options.iteration, options.timeout)
+
+    if options.quiet:
+        return
 
     if not options.get_json:
         print()
