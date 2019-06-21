@@ -88,3 +88,6 @@ class ConcolicType(object):
     def negate(self):
         self.value = not self.value
         self.expr = ['not', self.expr]
+
+    def __str__(self):
+        return "{ConType, value: %s, expr: %s)" % (self.value, self.expr)

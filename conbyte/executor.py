@@ -9,6 +9,7 @@ from .concolic_types.concolic_list import *
 from .concolic_types.concolic_map import * 
 
 from .regex import *
+import re
 
 log = logging.getLogger("ct.executor")
 
@@ -621,7 +622,10 @@ class Executor:
         elif instruct.opname is "LOAD_ATTR":
             load_name = instruct.argval
             object_var = mem_stack.pop() 
-            if object_var.has_attr(load_name):
+            if object_var == "re":
+                load_attr = getattr(re, load_name)
+                mem_stack.push(load_attr)
+            elif object_var.has_attr(load_name):
                 load_attr = object_var.get_attr(load_name)
                 mem_stack.push(load_attr)
             else:
@@ -849,17 +853,25 @@ class Executor:
             if isinstance(target, ConcolicInteger) or \
                isinstance(target, ConcolicStr) or \
                isinstance(target, ConcolicMap) or \
+               isinstance(target, RegexPattern) or \
+               isinstance(target, RegexMatch) or \
                isinstance(target, ConcolicList):
                 method_to_call = getattr(target, method)
                 mem_stack.push(method_to_call)
                 self.overwrite_method = True
                 log.debug("Load overwite: %s" % method)
-            elif target == "re" and method == "compile":
-                new_re = Regex()
-                method_to_call = getattr(new_re, method)
-                mem_stack.push(method_to_call)
-                self.overwrite_method = True
+            elif target == "re":
                 log.debug("Load Regex: %s" % method)
+                if method == "compile":
+                    pattern = RegexPattern()
+                    method_to_call = getattr(pattern, method)
+                    mem_stack.push(method_to_call)
+                    self.overwrite_method = True
+                else:
+                    match = RegexMatch
+                    method_to_call = getattr(match, method)
+                    mem_stack.push(method_to_call)
+                    self.overwrite_method = True
             else:
                 # Pass in as self
                 if isinstance(target, ConcolicObject):
