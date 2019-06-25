@@ -540,6 +540,9 @@ class Executor:
             elif isinstance(load_value, str):
                 expr = '\"' + load_value + '\"'
                 value = ConcolicStr(expr, load_value)
+            elif load_value is None:
+                expr = "nil"
+                value = ConcolicType(expr, None)
             else:
                 value = load_value
             mem_stack.push(value)
@@ -868,10 +871,11 @@ class Executor:
                     mem_stack.push(method_to_call)
                     self.overwrite_method = True
                 else:
-                    match = RegexMatch
-                    method_to_call = getattr(match, method)
+                    target = RegexWrap()
+                    method_to_call = getattr(target, method)
                     mem_stack.push(method_to_call)
                     self.overwrite_method = True
+
             else:
                 # Pass in as self
                 if isinstance(target, ConcolicObject):
