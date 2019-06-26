@@ -38,11 +38,8 @@ class ConcolicMap(ConcolicType):
             name = name.value
         return self.value[name]
 
-    def get_iter(self):
-        queue = Queue()
-        for element in self.value:
-            queue.push(element)
-        return queue
+    def get_iter_at(self, index):
+        return self.value.keys()[index.value]
 
     def store(self, name, val):
         if isinstance(name, ConcolicInteger) or \
@@ -55,3 +52,9 @@ class ConcolicMap(ConcolicType):
 
     def contains(self, other):
         return ConcolicType('nil', other.value in self.value)
+
+    def __len__(self):
+        return self.size
+
+    def len(self):
+        return self.size

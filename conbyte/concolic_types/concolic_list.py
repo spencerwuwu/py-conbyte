@@ -36,12 +36,6 @@ class ConcolicList(ConcolicType):
             stop = stop.value
         return ConcolicList(self.value[start:stop])
 
-    def get_iter(self):
-        queue = Queue()
-        for element in self.value:
-            queue.push(element)
-        return queue
-
     def contains(self, other):
         return ConcolicType('nil', other.value in self.value)
 

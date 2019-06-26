@@ -3,6 +3,12 @@ from .concolic_type import *
 
 log = logging.getLogger("ct.con.int")
 
+"""
+Classes:
+    ConcolicInteger
+    Concolic_range
+"""
+
 class ConcolicInteger(ConcolicType):
     def __init__(self, expr, value=None):
         self.expr = expr
@@ -68,3 +74,37 @@ for (name, op, op_smt) in ops:
     make_method(method, op, op_smt)
     rmethod = "__r%s__" % name
     make_method(rmethod, op, op_smt)
+
+
+class Concolic_range():
+    def __init__(self, start, end=None, step=None):
+        if end is None:
+            self.start = ConcolicInteger(0)
+            self.end = start
+        else:
+            self.start = start
+            self.end = end
+
+        if step is None:
+            self.step = ConcolicInteger(1)
+        else:
+            self.step = step
+            # See if the args violates range()
+            range(start.value, end.value, step.value)
+
+        self.cur = self.start
+
+    def next_iter(self):
+        if self.step.value > 0:
+            cond_val = self.cur.value < self.end.value
+            cond_exp = ["<", self.cur.expr, self.end.expr]
+        else:
+            cond_val = self.cur.value > self.end.value
+            cond_exp = [">", self.cur.expr, self.end.expr]
+
+        if cond_val:
+            ret = self.cur
+            self.cur += self.step
+        else:
+            ret = None
+        return ConcolicType(cond_exp, cond_val), ret

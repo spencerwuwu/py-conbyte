@@ -7,6 +7,7 @@ from .concolic_types.concolic_str import *
 from .concolic_types.concolic_object import * 
 from .concolic_types.concolic_list import * 
 from .concolic_types.concolic_map import * 
+from .concolic_types.concolic_iter import * 
 
 from .regex import *
 import re
@@ -32,12 +33,10 @@ class Executor:
     def _do_range(self, argv, mem_stack):
         args = []
         for i in range(argv):
-            var = mem_stack.pop().value
+            var = mem_stack.pop()
             args.append(var)
         args.reverse()
-        r_list = ConcolicList()
-        for i in range(*args):
-            r_list.append(ConcolicInteger(i))
+        r_list = Concolic_range(*args)
         return r_list 
 
     # Implement builtin sum()
@@ -164,7 +163,7 @@ class Executor:
         elif instruct.opname is "GET_ITER":
             # Get a queue
             tos = mem_stack.pop()
-            mem_stack.push(tos.get_iter())
+            mem_stack.push(ConcolicIter(tos))
             return
 
         elif instruct.opname is "GET_YIELD_FROM_ITER":
@@ -704,10 +703,11 @@ class Executor:
 
         elif instruct.opname is "FOR_ITER":
             next_offset = instruct.argval
-            if not mem_stack.top().is_empty():
-                value = mem_stack.top().pop()
-                log.debug("Iter: %s" % value)
-                mem_stack.push(value)
+            condition, next_iter = mem_stack.top().next_iter()
+            self.path.which_branch(condition)
+            if condition.value:
+                log.debug("Iter: %s" % next_iter)
+                mem_stack.push(next_iter)
             else:
                 mem_stack.pop()
                 self._handle_jump(c_frame, instruct)
@@ -820,8 +820,8 @@ class Executor:
                     mem_stack.push(mem_stack.pop())
 
             elif func == "range":
-                range_list = self._do_range(argv, mem_stack)
-                mem_stack.push(range_list)
+                range_object = self._do_range(argv, mem_stack)
+                mem_stack.push(range_object)
             elif func == "sum":
                 value = self._do_sum(mem_stack.pop())
                 mem_stack.push(value)

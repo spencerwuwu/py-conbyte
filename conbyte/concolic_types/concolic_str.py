@@ -55,15 +55,6 @@ class ConcolicStr(ConcolicType):
         return "{ConStr, value: %s, expr: %s)" % (self.value, self.expr)
 
 
-
-
-    def get_iter(self):
-        queue = Queue()
-        length = len(self.value)
-        for i in range(length):
-            queue.push(self.get_index(i))
-        return queue
-
     def contains(self, other):
         value = other.value in self.value
         expr = ["str.contains", self.expr, other.expr]

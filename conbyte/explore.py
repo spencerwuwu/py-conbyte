@@ -50,7 +50,7 @@ class ExplorationEngine:
 
         self.global_execution_coverage = coverage.CoverageData()
 
-        #dis.dis(target_module)
+        dis.dis(target_module)
 
         self.call_stack = Stack()
         self.mem_stack = Stack()
