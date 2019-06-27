@@ -539,9 +539,11 @@ class Executor:
             elif isinstance(load_value, str):
                 expr = '\"' + load_value + '\"'
                 value = ConcolicStr(expr, load_value)
-            elif load_value is None:
-                expr = "nil"
-                value = ConcolicType(expr, None)
+                """
+                elif load_value is None:
+                    expr = "nil"
+                    value = ConcolicType(expr, None)
+                """
             else:
                 value = load_value
             mem_stack.push(value)
@@ -910,7 +912,7 @@ class Executor:
             while argv > 0:
                 var = mem_stack.pop()
                 if var is not None and var.value < 0:
-                    log.error("Does not support genative step yet")
+                    log.error("Does not support negative step yet")
                 args.append(var)
                 argv -= 1
             args.reverse()
