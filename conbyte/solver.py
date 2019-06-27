@@ -98,7 +98,7 @@ class Solver(object):
             else:
                 ret = "UNKNOWN"
 
-        log.info("%s smt, Result: %s" % (self.cnt, ret))
+        log.debug("%s smt, Result: %s" % (self.cnt, ret))
         self.cnt += 1
         return ret, model
 

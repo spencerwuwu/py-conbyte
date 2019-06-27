@@ -18,7 +18,7 @@ def substring(s: str) -> int:
         str_end = i
         cur_str = s[str_start:str_end + 1]
         cur_len = len(cur_str)
-        if cur_len > max_len:  
+        if cur_len >= max_len:  
             max_len = cur_len
         i += 1
     

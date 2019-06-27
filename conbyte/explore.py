@@ -50,7 +50,7 @@ class ExplorationEngine:
 
         self.global_execution_coverage = coverage.CoverageData()
 
-        dis.dis(target_module)
+        # dis.dis(target_module)
 
         self.call_stack = Stack()
         self.mem_stack = Stack()
@@ -222,14 +222,14 @@ class ExplorationEngine:
         else:
             return False
 
-    def explore(self, max_iterations=30, timeout=None):
+    def explore(self, max_iterations, timeout=None):
         # First Execution
         self._one_execution(self.ini_vars)
         iterations = 1
 
         # TODO: Currently single thread
         while not self._is_exploration_complete():
-            if max_iterations is not None and iterations >= max_iterations:
+            if iterations >= max_iterations:
                 break
                 
             if not self.solved_constraints.is_empty():
@@ -240,21 +240,27 @@ class ExplorationEngine:
 
                 selected_constraint = self.path.find_constraint(selected_id)
             else:
+                cnt = 0
                 while not self.constraints_to_solve.is_empty():
                     target = self.constraints_to_solve.pop()
                     log.debug("Solving: %s" % target)
                     asserts, query = target.get_asserts_and_query()
                     ret, model = self.solver.find_counter_example(asserts, query, timeout)
                     self.solved_constraints.push((target.id, ret, model))
+                    # Every 4 solve check if any new inputs
+                    cnt += 1
+                    if cnt == 4:
+                        break
                 continue
 
             if model is not None:
+                log.info("=== Iterations: %s ===" % iterations)
+                iterations += 1
                 args = self._recordInputs(model)
                 try:
                     self._one_execution(args, selected_constraint)
                 except: 
                     traceback.print_exc()
-                iterations += 1
                 self.num_processed_constraints += 1
             self.finished_constraints.append(selected_id)
 

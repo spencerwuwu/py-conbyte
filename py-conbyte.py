@@ -22,7 +22,7 @@ def main():
     setup_group.add_option("-i", "--input", dest="inputs", action="store", help="Specify initial inputs, default to \'./inputs.py\'", default="./inputs.py")
     setup_group.add_option("--stdin", dest="from_stdin", action="store_true", help="Read inputs from stdin instead of a file")
     setup_group.add_option("-e", "--entry", dest="entry", action="store", help="Specify entry point, if different than (target).py", default=None)
-    setup_group.add_option("-m", "--max_iter", dest="iteration", action="store", help="Specify max iterations", default=None)
+    setup_group.add_option("-m", "--max_iter", dest="iteration", action="store", help="Specify max iterations", default=50)
     setup_group.add_option("-t", "--timeout", dest="timeout", action="store", help="Specify solver timeout", default=None)
     parser.add_option_group(setup_group)
 
