@@ -172,6 +172,11 @@ class ConcolicStr(ConcolicType):
         if isinstance(index, ConcolicInteger):
             index = index.value
         self.value[index] = value
+
+    def index(self, target):
+        expr = ["str.indexof", self.expr, target.expr]
+        value = self.value.index(target.value)
+        return ConcolicInteger(expr, value)
     
     # TODO
     """

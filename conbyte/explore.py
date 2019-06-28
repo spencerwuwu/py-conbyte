@@ -7,6 +7,7 @@ import traceback
 import json
 
 import coverage
+from func_timeout import func_timeout, FunctionTimedOut
 
 from .utils import * 
 from .function import *
@@ -29,7 +30,7 @@ class ExplorationEngine:
     def __init__(self, path, filename, module, entry, ini_vars, query_store, solver_type):
         # Set up import environment
         sys.path.append(path)
-        target_module = __import__(module)
+        self.t_module = __import__(module)
         if entry == None:
             self.entry = module
         else:
@@ -37,7 +38,6 @@ class ExplorationEngine:
 
         self.trace_into = []
         self.functions = dict()
-        self.get_members(target_module)
 
         self.ini_vars = ini_vars
         self.symbolic_inputs = None 
@@ -47,10 +47,11 @@ class ExplorationEngine:
         self.finished_constraints = []
         self.num_processed_constraints = 0
         self.input_sets = []
+        self.in_ret_sets = []
 
         self.global_execution_coverage = coverage.CoverageData()
 
-        # dis.dis(target_module)
+        # dis.dis(self.t_module)
 
         self.call_stack = Stack()
         self.mem_stack = Stack()
@@ -74,7 +75,7 @@ class ExplorationEngine:
     def add_constraint(self, constraint):
         self.new_constraints.append(constraint)
 
-    # TODO: Complete all types
+    # Legacy
     def get_members(self, target_module):
         for name, obj in inspect.getmembers(target_module):
             """
@@ -258,8 +259,11 @@ class ExplorationEngine:
                 iterations += 1
                 args = self._recordInputs(model)
                 try:
-                    self._one_execution(args, selected_constraint)
-                except: 
+                    ret = func_timeout(5, self._one_execution, args=(args, selected_constraint))
+                except FunctionTimedOut:
+                    log.error("Execution timeout for: %s" % args)
+                except Exception as e: 
+                    log.error("Execution exception for: %s" % args)
                     traceback.print_exc()
                 self.num_processed_constraints += 1
             self.finished_constraints.append(selected_id)
@@ -284,7 +288,7 @@ class ExplorationEngine:
         self.mem_stack.sanitize()
         self.path.reset(expected_path)
 
-        execute = self.functions[self.entry].obj
+        execute = getattr(self.t_module, self.entry)
         sys.settrace(self.trace_calls)
         ret = execute(*init_vars)
         sys.settrace(None)
@@ -296,10 +300,11 @@ class ExplorationEngine:
             self.constraints_to_solve.push(constraint)
 
         self.input_sets.append(init_vars)
+        self.in_ret_sets.append({"input": init_vars, "result": ret})
 
 
     def execute_coverage(self):
-        execute = self.functions[self.entry].obj
+        execute = getattr(self.t_module, self.entry)
         cov = coverage.Coverage(branch=True)
         for args in self.input_sets:
             cov.start()
