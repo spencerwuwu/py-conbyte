@@ -59,7 +59,7 @@ class ConcolicList(ConcolicType):
         return self.size
 
     def len(self):
-        return self.size
+        return ConcolicInteger(self.size)
     
     def multiply(self, mul):
         if isinstance(mul, ConcolicInteger):

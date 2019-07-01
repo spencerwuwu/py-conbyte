@@ -54,7 +54,7 @@ class ConcolicMap(ConcolicType):
         return ConcolicType('nil', other.value in self.value)
 
     def __len__(self):
-        return self.size
+        return ConcolicInteger(self.size)
 
     def len(self):
         return self.size

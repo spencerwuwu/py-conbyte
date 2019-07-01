@@ -261,7 +261,7 @@ class ExplorationEngine:
                 try:
                     ret = func_timeout(5, self._one_execution, args=(args, selected_constraint))
                 except FunctionTimedOut:
-                    log.error("Execution timeout for: %s" % args)
+                    log.error("Execution Timeout: %s" % args)
                 except Exception as e: 
                     log.error("Execution exception for: %s" % args)
                     traceback.print_exc()

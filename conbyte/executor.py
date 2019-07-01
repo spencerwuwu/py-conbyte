@@ -1,4 +1,5 @@
 import logging
+import sys
 
 from .utils import * 
 from .concolic_types.concolic_type import * 
@@ -241,7 +242,6 @@ class Executor:
             else:
                 # Sliced object (Hopefully)
                 mem_stack.push(tos)
-                print("Yes")
 
         elif instruct.opname is "BINARY_LSHIFT":
             to = mem_stack.pop()
@@ -674,9 +674,10 @@ class Executor:
 
         elif instruct.opname is "POP_JUMP_IF_FALSE":
             condition = mem_stack.pop()
-            if not condition.value:
+            if condition is None or not condition.value:
                 self._handle_jump(c_frame, instruct)
-            self.path.which_branch(condition)
+            if condition is not None:
+                self.path.which_branch(condition)
             return
 
         elif instruct.opname is "JUMP_IF_TRUE_OR_POP":
@@ -839,6 +840,8 @@ class Executor:
                 t = mem_stack.pop()
                 mem_stack.push(t.do_abs())
             else:
+                print("Does not support %s" % func, file=sys.stderr)
+                exit(1)
                 return
             return False
 

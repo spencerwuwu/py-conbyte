@@ -85,7 +85,7 @@ def main():
 
     engine = ExplorationEngine(path, filename, module, options.entry, inputs_space["INI_ARGS"], query, options.solver_type)
 
-    engine.explore(options.iteration, options.timeout)
+    engine.explore(int(options.iteration), options.timeout)
 
     if options.quiet:
         return
@@ -98,6 +98,8 @@ def main():
         engine.print_coverage()
     else:
         print(engine.result_to_json())
+
+    print(engine.in_ret_sets)
 
     
 

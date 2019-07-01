@@ -27,14 +27,14 @@ class ConcolicIter():
                 if cond_val:
                     ret = target.get_index(self.index)
             elif isinstance(target, ConcolicList):
-                length = target.len()
+                length = target.len().value
                 cond_val = self.index.value < length
                 condition = ConcolicType("nil", cond_val)
                 if cond_val:
                     ret = target.get_index(self.index)
 
             elif isinstance(target, ConcolicMap):
-                length = target.len()
+                length = target.len().value
                 cond_val = self.index.value < length
                 condition = ConcolicType("nil", cond_val)
                 if cond_val:

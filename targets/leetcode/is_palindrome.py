@@ -1,20 +1,28 @@
 
-# 009_Palindrome_Number
 
-def is_palindrome(x):
-    #leetcode book
-    if x < 0:
-        return False
-    div = 1
-    while x / div >= 10:
-        div *= 10
-    while x != 0:
-        left = x / div
-        right = x % 10
-        if left != right:
+def isLongPressedName(name, typed):
+    j = 0
+    for c in name:
+        if j == len(typed):
             return False
-        x = (x % div) / 10
-        div /= 100
+
+        # If mismatch...
+        if typed[j] != c:
+            # If it's the first char of the block, ans is False.
+            if (j == 0) or (typed[j-1] != typed[j]):
+                return False
+
+            # Discard all similar chars.
+            cur = typed[j]
+            while j < len(typed) and typed[j] == cur:
+                j += 1
+
+            # If next isn't a match, ans is False.
+            if j == len(typed) or typed[j] != c:
+                return False
+
+        j += 1
+
     return True
 
-print(is_palindrome(1001))  # pragma: no cover
+print(isLongPressedName('Foolyou', 'FFoolyouu'))
