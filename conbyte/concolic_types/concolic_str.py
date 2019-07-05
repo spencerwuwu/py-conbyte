@@ -48,7 +48,10 @@ class ConcolicStr(ConcolicType):
         if isinstance(index, int):
             index = ConcolicInteger(index, index)
         value = self.value[index.value]
-        expr = ["str.at", self.expr, index.expr]
+        if index.value < 0:
+            expr = ["str.at", self.expr, ["+", ["str.len", self.expr], index.expr]]
+        else:
+            expr = ["str.at", self.expr, index.expr]
         return ConcolicStr(expr, value)
 
     def __str__(self):
@@ -108,7 +111,14 @@ class ConcolicStr(ConcolicType):
                 return ConcolicList([self.get_slice(None, sep_idx)]) + \
                    ConcolicList(self.get_slice(sep_idx + 1).split(sep, maxsplit - 1))
 
+    def isdigit(self):
+        value = self.value.isdigit()
+        reg = ["re.++", ["re.opt", ["str.to.re", "\"-\""]], ["re.+", ["re.range", "\"0\"", "\"9\""]]]
+        expr = ["str.in.re", self.expr, reg]
+        return ConcolicStr(expr, value)
+
     def join(self, array):
+        # TODO
         if isinstance(array, ConcolicList):
             orig = ConcolicStr(self.expr, self.value)
             self.value = ""
@@ -177,6 +187,35 @@ class ConcolicStr(ConcolicType):
         expr = ["str.indexof", self.expr, target.expr]
         value = self.value.index(target.value)
         return ConcolicInteger(expr, value)
+
+    def compare_op(self, operator, other):
+        val_l = self.value
+        val_r = other.value
+        if operator == "==":
+            value = val_l == val_r
+            expr = ["=", self.expr, other.expr]
+        elif operator == "!=":
+            value = val_l != val_r
+            expr = ['not', ["=", self.expr, other.expr]]
+        elif operator == ">":
+            value = val_l > val_r
+            expr = ["str.in.re", self.expr, ["re.range", other.expr, "\"\\xff\""]]
+            expr = ["and", ["not", ["=", self.expr, other.expr]], expr]
+        elif operator == "<":
+            value = val_l < val_r
+            expr = ["str.in.re", self.expr, ["re.range", "\"\\x00\"", other.expr]]
+            expr = ["and", ["not", ["=", self.expr, other.expr]], expr]
+        elif operator == ">=":
+            value = val_l >= val_r
+            expr = ["str.in.re", self.expr, ["re.range", other.expr, "\"\\xff\""]]
+        elif operator == "<=":
+            value = val_l <= val_r
+            expr = ["str.in.re", self.expr, ["re.range", "\"\\x00\"", other.expr]]
+        else:
+            return None
+
+        return ConcolicType(expr, value)
+
     
     # TODO
     """

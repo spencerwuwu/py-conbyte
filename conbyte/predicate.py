@@ -32,7 +32,14 @@ class Predicate:
                 formula += self._get_formula(exp) + " "
             return formula + " )"
         else:
-            return str(expr)
+            if isinstance(expr, int):
+                if expr < 0:
+                    ret = "(- %s)" % -expr
+                else:
+                    ret = str(expr)
+                return ret
+            else:
+                return str(expr)
 
     def __str__(self):
         return "Result: %s\tExpr: %s" % (self.result, self.concolic.expr)

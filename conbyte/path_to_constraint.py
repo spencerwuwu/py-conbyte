@@ -28,7 +28,7 @@ class PathToConstraint:
 
     def which_branch(self, concolic_type):
         if concolic_type.expr == 'nil':
-            log.info("Skip nil")
+            log.debug("Skip nil")
             return
 
         if isinstance(concolic_type.expr, bool):

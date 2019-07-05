@@ -27,6 +27,8 @@ class ConcolicList(ConcolicType):
         log.debug("  List append: %s" % element)
 
     def get_index(self, index=0):
+        if isinstance(index, ConcolicInteger):
+            index = index.value
         return self.value[index]
 
     def get_slice(self, start=None, stop=None):
@@ -76,3 +78,12 @@ class ConcolicList(ConcolicType):
             index = index.value
 
         self.value[index] = value
+    
+    def reverse(self):
+        self.value = reversed(self.value)
+
+    def insert(self, index, value):
+        self.size += 1
+        if isinstance(index, ConcolicInteger):
+            index = index.value
+        self.value.insert(index, value)

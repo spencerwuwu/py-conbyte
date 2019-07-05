@@ -11,7 +11,6 @@ Classes:
 
 class ConcolicInteger(ConcolicType):
     def __init__(self, expr, value=None):
-        self.expr = expr
         if value is None:
             if isinstance(expr, int):
                 self.value = expr
@@ -19,6 +18,7 @@ class ConcolicInteger(ConcolicType):
                 self.value = int(expr)
         else:
             self.value = value
+        self.expr = expr
         log.debug("  ConInt, value: %s, expr: %s" % (self.value, self.expr))
 
     def __int__(self):
@@ -41,6 +41,9 @@ class ConcolicInteger(ConcolicType):
         expr = ["ite", [">=", self.expr, 0], self.expr, ["-", 0, self.expr]]
         return ConcolicInteger(expr, value)
 
+    def int(self):
+        return self
+
 ops = [("add", "+", "+"),
        ("sub", "-", "-"),
        ("mul", "*", "*"),
@@ -62,7 +65,7 @@ def make_method(method, op, op_smt):
     code = "def %s(self, other):\n" % method
     code += "   if isinstance(other, int):\n"
     code += "      other = ConcolicInteger(other)\n"
-    code += "   value = self.value %s other.value\n" % op
+    code += "   value = int(self.value %s other.value)\n" % op
     code += "   expr = [\"%s\", self.expr, other.expr]\n" % op_smt
     code += "   return ConcolicInteger(expr, value)"
     locals_dict = {}
@@ -108,3 +111,13 @@ class Concolic_range():
         else:
             ret = None
         return ConcolicType(cond_exp, cond_val), ret
+
+    def __str__(self):
+        return "(Inter s: %s, e: %s, step: %s)" % (self.start, self.end, self.step)
+
+    def reverse(self):
+        self.step.negate()
+        tmp = self.end + self.step
+        self.end  = self.start + self.step
+        self.start = tmp
+        self.cur = self.start

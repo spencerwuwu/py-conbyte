@@ -47,6 +47,15 @@ class Executor:
             ret += element
         return ret
 
+    def _do_reversed(self, target):
+        if isinstance(target, Concolic_range):
+            target.reverse()
+        elif isinstance(target, ConcolicList):
+            target.reverse()
+        else:
+            target = target
+        return target
+
     # Implement builtin max()
     def _do_max(self, a, b):
         value = a.value if a.value > b.value else b.value
@@ -839,10 +848,15 @@ class Executor:
             elif func == "abs":
                 t = mem_stack.pop()
                 mem_stack.push(t.do_abs())
+            elif func == "reversed":
+                t = mem_stack.pop()
+                mem_stack.push(self._do_reversed(t))
             else:
+                return
+            """
                 print("Does not support %s" % func, file=sys.stderr)
                 exit(1)
-                return
+            """
             return False
 
         elif instruct.opname is "CALL_FUNCTION_KW":
@@ -925,7 +939,7 @@ class Executor:
 
         elif instruct.opname is "EXTENDED_ARG":
             # TODO
-            log.warning("%s Not implemented" % instruct.opname)
+            #log.warning("%s Not implemented" % instruct.opname)
             return
 
         elif instruct.opname is "FORMAT_VALUE":
