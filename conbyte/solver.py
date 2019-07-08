@@ -45,12 +45,12 @@ class Solver(object):
             if timeout is not None:
                 cmd = self.cmd + " -T:" + str(timeout)
             else:
-                cmd = self.cmd + " -T:15"
+                cmd = self.cmd + " -T:1"
         else:
             if timeout is not None:
                 cmd = self.cmd + ("--tlimit=%s" % (timeout * 1000))
             else:
-                cmd = self.cmd + " --tlimit=15000"
+                cmd = self.cmd + " --tlimit=1000"
         self.asserts = asserts
         self.query = query
         result, model = self._find_model(cmd)

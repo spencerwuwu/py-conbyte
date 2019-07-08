@@ -1,5 +1,9 @@
 # py-conbyte 
 
+# Requirements
+- Python version >= 3.7.3
+- SMT-solver installed ([Z3](https://github.com/Z3Prover/z3) or [CVC4](https://github.com/CVC4/CVC4)) 
+
 A Python concolic testing tool running on byte-code level.
 
 This project is based on the structure purposed in
