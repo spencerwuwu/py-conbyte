@@ -7,7 +7,7 @@ def ugly_number(num):
     divisors = [2, 3, 5]
     for d in divisors:
         while num % d == 0:
-            num /= d
+            num = int(num / d)
     return num == 1
 
 print(ugly_number(-2147483648)) # pragma: no cover

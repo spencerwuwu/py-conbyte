@@ -6,14 +6,14 @@ def fraction_to_decimal(numerator, denominator):
     :type denominator: int
     :rtype: str
     """
-    if numerator == 0:
+    if numerator == 0 or denominator == 0:
         return '0'
     fraction = ''
     if (numerator < 0) ^ (denominator < 0):
         fraction += '-'
     dividend = abs(numerator)
     divisor = abs(denominator)
-    fraction += str(dividend / divisor)
+    fraction += str(int(dividend / divisor))
     remainder = dividend % divisor
     if remainder == 0:
         return fraction
@@ -25,7 +25,7 @@ def fraction_to_decimal(numerator, denominator):
             break
         dic[remainder] = len(fraction)
         remainder *= 10
-        fraction += str(remainder / divisor)
+        fraction += str(int(remainder / divisor))
         remainder %= divisor
     return fraction
 

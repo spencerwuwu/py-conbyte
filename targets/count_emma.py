@@ -1,4 +1,6 @@
-def count_jhon(statement):
+# https://pynative.com/python-basic-exercise-for-beginners/
+
+def count_emma(statement):
   count = 0
   for i in range(len(statement)-1):
     if statement[i:i+4] == 'Emma':
@@ -7,4 +9,4 @@ def count_jhon(statement):
     # count += statement[i:i+4] == 'Emma'
   return count
 
-print(count_jhon("Emma is good developer. Emma is aslo a writer"))
+print(count_emma("Emma is good developer. Emma is aslo a writer"))  # pragma: no cover
