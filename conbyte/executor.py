@@ -23,8 +23,10 @@ class Executor:
 
     def _handle_jump(self, frame, instruct):
         offset = instruct.argval
-        frame.next_offset = offset
-        frame.instructions.sanitize()
+        instruct = frame.get_instruct(offset)
+        if not frame.instructions.is_empty() and instruct != frame.instructions.top():
+            frame.next_offset = offset
+            frame.instructions.sanitize()
         """
         if instruct.offset > offset:
             frame.instructions.sanitize()
@@ -505,15 +507,23 @@ class Executor:
         elif instruct.opname is "UNPACK_SEQUENCE":
             size = instruct.argval
             seqs = mem_stack.pop()
-            for seq in seqs:
-                if isinstance(seq, int):
-                    value = ConcolicInteger(seq, seq)
-                elif isinstance(seq, str):
-                    expr = '\"' + seq + '\"'
-                    value = ConcolicStr(seq, seq)
-                else:
-                    value = None
-                mem_stack.push(value)
+            tmp_l = []
+            if isinstance(seqs, ConcolicList):
+                for value in seqs.value:
+                    tmp_l.append(value)
+            else:
+                for seq in seqs:
+                    if isinstance(seq, int):
+                        value = ConcolicInteger(seq, seq)
+                    elif isinstance(seq, str):
+                        expr = '\"' + seq + '\"'
+                        value = ConcolicStr(seq, seq)
+                    else:
+                        value = None
+                    tmp_l.append(value)
+            tmp_l.reverse()
+            for val in tmp_l:
+                mem_stack.push(val)
             return
 
         elif instruct.opname is "UNPACK_EX":
@@ -563,8 +573,13 @@ class Executor:
             return
 
         elif instruct.opname is "BUILD_TUPLE":
-            # TODO
-            log.warning("%s Not implemented" % instruct.opname)
+            size = instruct.argval
+            tmp_list = []
+            for i in range(size):
+                tmp_list.append(mem_stack.pop())
+            tmp_list.reverse()
+            t = ConcolicList(tmp_list)
+            mem_stack.push(t)
             return
 
         elif instruct.opname is "BUILD_LIST":
@@ -635,7 +650,7 @@ class Executor:
         elif instruct.opname is "LOAD_ATTR":
             load_name = instruct.argval
             object_var = mem_stack.pop() 
-            if object_var == "re":
+            if isinstance(object_var, str) and object_var == "re":
                 load_attr = getattr(re, load_name)
                 mem_stack.push(load_attr)
             elif object_var.has_attr(load_name):
@@ -882,7 +897,7 @@ class Executor:
                 mem_stack.push(method_to_call)
                 self.overwrite_method = True
                 log.debug("Load overwite: %s" % method)
-            elif target == "re":
+            elif isinstance(target, str) and target == "re":
                 log.debug("Load Regex: %s" % method)
                 if method == "compile":
                     pattern = RegexPattern()

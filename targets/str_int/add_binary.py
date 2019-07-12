@@ -1,6 +1,16 @@
 
 # 067_Add_Binary
 
+def div_rem(dividend, divider):
+    div_c = 0
+    orig = dividend
+    while orig >= divider:
+        orig -= divider
+        div_c += 1
+    return div_c, orig
+
+
+
 def add_binary(a, b):
     res = ''
     lsa, lsb = len(a), len(b)
@@ -11,8 +21,9 @@ def add_binary(a, b):
             curr += int(a[pos])
         if (lsb + pos) >= 0:
             curr += int(b[pos])
-        res = str(curr % 2) + res
-        curr = int(curr / 2)
+        div, rem = div_rem(curr, 2)
+        res = str(rem) + res
+        curr = div 
         pos -= 1
     if curr == 1:
         res = '1' + res

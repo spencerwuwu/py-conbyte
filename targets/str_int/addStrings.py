@@ -14,18 +14,30 @@ def addStrings(num1, num2):
     pos = -1
     while pos + ls >= 0:
         curr = int(num1[pos]) + int(num2[pos]) + carry
-        res.insert(0, str(curr % 10))
-        carry = int(curr / 10)
+        if curr >= 10:
+            res.insert(0, str(curr - 10))
+            carry = 1 
+        else:
+            res.insert(0, str(curr))
+            carry = 0 
         pos -= 1
     while pos + len(num1) >= 0:
         curr = int(num1[pos]) + carry
-        res.insert(0, str(curr % 10))
-        carry = int(curr / 10)
+        if curr >= 10:
+            res.insert(0, str(curr - 10))
+            carry = 1 
+        else:
+            res.insert(0, str(curr))
+            carry = 0 
         pos -= 1
     while pos + len(num2) >= 0:
         curr = int(num2[pos]) + carry
-        res.insert(0, str(curr % 10))
-        carry = curr / 10
+        if curr >= 10:
+            res.insert(0, str(curr - 10))
+            carry = 1 
+        else:
+            res.insert(0, str(curr))
+            carry = 0 
         pos -= 1
     if carry != 0:
         res.insert(0, str(carry))
