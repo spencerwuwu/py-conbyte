@@ -26,7 +26,7 @@ class PathToConstraint:
                 self.expected_path.append(tmp.predicate)
                 tmp = tmp.parent
 
-    def which_branch(self, concolic_type):
+    def which_branch(self, concolic_type, process_neg=True):
         if concolic_type.expr == 'nil':
             log.debug("Skip nil")
             return
@@ -40,14 +40,17 @@ class PathToConstraint:
         pneg = p.negate()
         cneg = self.current_constraint.find_child(p)
 
-        if c is None:
+        if c is None and cneg is None:
             c = self.current_constraint.add_child(p)
             c.processed = True
-            cneg = self.current_constraint.add_child(pneg)
-            # we add the new constraint to the queue of the engine for later processing
-            self.add(cneg)
-            log.debug("Cur constraint %s" % c)
-            log.debug("Add constraint %s" % cneg)
+            if not process_neg:
+                log.debug("Singel constraint %s" % c)
+            else:
+                cneg = self.current_constraint.add_child(pneg)
+                # we add the new constraint to the queue of the engine for later processing
+                self.add(cneg)
+                log.debug("Cur constraint %s" % c)
+                log.debug("Add constraint %s" % cneg)
 
         self.current_constraint = c
 

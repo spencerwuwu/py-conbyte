@@ -47,6 +47,7 @@ class ExplorationEngine:
         self.finished_constraints = []
         self.num_processed_constraints = 0
         self.input_sets = []
+        self.error_sets = []
         self.in_ret_sets = []
 
         self.global_execution_coverage = coverage.CoverageData()
@@ -265,6 +266,8 @@ class ExplorationEngine:
                 except Exception as e: 
                     log.error("Execution exception for: %s" % args)
                     traceback.print_exc()
+                if args not in self.input_sets:
+                    self.error_sets.append(args)
                 self.num_processed_constraints += 1
             self.finished_constraints.append(selected_id)
 
@@ -336,6 +339,7 @@ class ExplorationEngine:
     def result_to_json(self):
         res = dict()
         res["inputs"] = self.input_sets
+        res["error_inputs"] = self.error_sets
         total_lines, executed_lines, executed_branches = self.coverage_statistics()
         res["total_lines"] = total_lines
         res["executed_lines"] = executed_lines

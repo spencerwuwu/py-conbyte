@@ -827,6 +827,9 @@ class Executor:
                     mem_stack.push(ConcolicInteger(target.size))
                 function_to_call = getattr(target, func)
                 mem_stack.push(function_to_call())
+                if func == "int":
+                    self.path.which_branch(target.isdigit(), False)
+
             elif func == "str":
                 target = mem_stack.pop()
                 if isinstance(target, ConcolicInteger):

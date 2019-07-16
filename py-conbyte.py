@@ -95,6 +95,12 @@ def main():
         print("Generated inputs")
         for inputs in engine.input_sets:
             print(inputs)
+        if len(engine.error_sets) != 0:
+            print()
+            print("Error inputs")
+            for inputs in engine.error_sets:
+                print(inputs)
+        print()
         engine.print_coverage()
     else:
         print(engine.result_to_json())
