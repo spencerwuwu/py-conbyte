@@ -21,9 +21,13 @@ class Executor:
         self.overwrite_method = False
         self.build_slice = False
 
-    def _handle_jump(self, frame, instruct):
+    def _handle_jump(self, frame, instruct, force=False):
         offset = instruct.argval
         instruct = frame.get_instruct(offset)
+        if force and instruct != frame.instructions.top():
+            frame.next_offset = offset
+            frame.instructions.sanitize()
+            return
         if not frame.instructions.is_empty() and instruct != frame.instructions.top():
             frame.next_offset = offset
             frame.instructions.sanitize()
@@ -737,7 +741,7 @@ class Executor:
                 mem_stack.push(next_iter)
             else:
                 mem_stack.pop()
-                self._handle_jump(c_frame, instruct)
+                self._handle_jump(c_frame, instruct, True)
             return
 
         elif instruct.opname is "LOAD_GLOBAL":

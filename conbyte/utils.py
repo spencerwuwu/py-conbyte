@@ -10,6 +10,8 @@ class Stack:
         self.stack.insert(0, item)
 
     def top(self):
+        if len(self.stack) == 0:
+            return None
         return self.stack[0]
 
     def s_size(self):
@@ -60,6 +62,8 @@ class Queue:
             return True
 
     def top(self):
+        if len(self.queue) == 0:
+            return None
         return self.queue[0]
 
     def sanitize(self):
