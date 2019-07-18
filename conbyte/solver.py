@@ -58,6 +58,7 @@ class Solver(object):
         solve_time = endtime - start_time
         return result, model
 
+
     def _find_model(self, cmd):
 
         formulas = self._build_expr()
@@ -107,15 +108,23 @@ class Solver(object):
         model = dict()
         for line in models:
             name, value = line.replace("((", "").replace("))", "").split(" ", 1)
-            if self.variables[name] is "Int":
+            if self.variables[name] == "Int":
                 if "(" in value:
                     value = value.replace("(", "").replace(")", "").split(" ")[1]
-                    model[name] = -int(value)
+                    result = -int(value)
                 else:
-                    model[name] = int(value)
-            else:
+                    result = int(value)
+            elif self.varaibles[name] == "String":
                 value = value.replace("\"", "", 1).replace("\"", "", -1)
-                model[name] = value
+                result = value
+
+            if name.startswith("_ARR_"):
+                name = name.replace("_ARR_", "").split("_", 1)[1]
+                if name not in model:
+                    model[name] = list()
+                model[name].append(result)
+            else:
+                model[name] = result
         return model
 
 
@@ -130,11 +139,16 @@ $query
 $getvars
 """)
         assignments = dict()
-        assignments['declarevars'] = "\n".join(
-            "(declare-fun {} () {})".format(name, var) for name, var in self.variables.items())
+        assignments['declarevars'] = "\n"
+        for (name, var) in self.variables.items():
+            if var != "List":
+                assignments['declarevars'] += "(declare-fun {} () {})\n".format(name, var)
 
         assignments['query'] = "\n".join(assertion.get_formula() for assertion in self.asserts)
         assignments['query'] += self.query.get_formula()
 
-        assignments['getvars'] = "\n".join("(get-value ({}))".format(name) for name in self.variables)
+        assignments['getvars'] = "\n"
+        for name, var in self.variables.items():
+            if var != "List":
+                assignments['getvars'] += "(get-value ({}))\n".format(name)
         return f_template.substitute(assignments).strip()

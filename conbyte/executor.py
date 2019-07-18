@@ -826,8 +826,7 @@ class Executor:
             overwrite = ["len", "int", "join"]
             if func in overwrite:
                 target = mem_stack.pop()
-                if isinstance(target, ConcolicList) or \
-                   isinstance(target, ConcolicMap):
+                if isinstance(target, ConcolicMap):
                     mem_stack.push(ConcolicInteger(target.size))
                 function_to_call = getattr(target, func)
                 mem_stack.push(function_to_call())
@@ -875,10 +874,6 @@ class Executor:
                 mem_stack.push(self._do_reversed(t))
             else:
                 return
-            """
-                print("Does not support %s" % func, file=sys.stderr)
-                exit(1)
-            """
             return False
 
         elif instruct.opname is "CALL_FUNCTION_KW":

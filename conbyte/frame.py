@@ -54,6 +54,20 @@ class Frame:
                 elif isinstance(local_value, str):
                     concolic_var = ConcolicStr(local, local_value)
                     symbolic_inputs[local] = "String"
+                elif isinstance(local_value, list):
+                    concolic_var = ConcolicList()
+                    symbolic_inputs[local] = "List"
+                    index = 0
+                    for element in local_value:
+                        name = "_ARR_%d_%s" % (index, local)
+                        if isinstance(element, int):
+                            c_var = ConcolicInteger(name, element)
+                            symbolic_inputs[name] = "Int"
+                        elif isinstance(element, str):
+                            c_var = ConcolicInteger(name, element)
+                            symbolic_inputs[name] = "String"
+                        concolic_var.append(c_var)
+                        index += 1
                 self.variables[local] = concolic_var
 
         self._set_globals()
