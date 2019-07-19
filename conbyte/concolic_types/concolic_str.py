@@ -63,6 +63,11 @@ class ConcolicStr(ConcolicType):
         expr = ["str.contains", self.expr, other.expr]
         return ConcolicType(expr, value)
 
+    def not_contains(self, other):
+        value = other.value not in self.value
+        expr = ["not", ["str.contains", self.expr, other.expr]]
+        return ConcolicType(expr, value)
+
     def get_slice(self, start=None, stop=None):
         stop = self.len() if stop is None else stop
         start = ConcolicInteger(0) if start is None else start
@@ -79,11 +84,17 @@ class ConcolicStr(ConcolicType):
         else:
             value = self.value.find(findstr.value, beg.value)
             expr = ["str.indexof", self.expr, findstr.expr, beg.expr]
+
         return ConcolicInteger(expr, value)
 
     def startswith(self, prefix):
         value = self.value.startswith(prefix.value)
         expr = ["str.prefixof", prefix.expr, self.expr]
+        return ConcolicType(expr, value)
+
+    def endswith(self, suffix):
+        value = self.value.endswith(suffix.value)
+        expr = ["str.suffixof", suffix.expr, self.expr]
         return ConcolicType(expr, value)
 
     def split(self, sep=None, maxsplit=None):
@@ -94,7 +105,7 @@ class ConcolicStr(ConcolicType):
             if len(self.value) == 0:
                 return ConcolicList([ConcolicStr("\"\"")])
         else:
-            sep = ConcolicStr(" ")
+            sep = ConcolicStr("\" \"", " ")
             if len(self.value) == 0:
                 return ConcolicList([ConcolicStr("\"\"")])
         if isinstance(sep, str):
@@ -143,6 +154,11 @@ class ConcolicStr(ConcolicType):
         value = self.value.lower()
         return ConcolicStr('\"' + value + '\"')
 
+    # Return a new string, no continued expr
+    def upper(self):
+        value = self.value.upper()
+        return ConcolicStr('\"' + value + '\"')
+
     def replace(self, old, new, maxreplace=-1):
         value = self.value
         expr = self.expr
@@ -184,7 +200,7 @@ class ConcolicStr(ConcolicType):
         self.value[index] = value
 
     def index(self, target):
-        expr = ["str.indexof", self.expr, target.expr]
+        expr = ["str.indexof", self.expr, target.expr, "0"]
         value = self.value.index(target.value)
         return ConcolicInteger(expr, value)
 

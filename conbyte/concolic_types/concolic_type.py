@@ -64,7 +64,7 @@ class ConcolicType(object):
         if self.value != other.value:
             return False
         else:
-            return self.eq_worker(self.expr, other.expr)
+            return self._eq_worker(self.expr, other.expr)
 
     # TODO
     def __or__(self, other):

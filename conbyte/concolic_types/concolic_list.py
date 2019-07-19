@@ -4,6 +4,12 @@ from .concolic_int import *
 
 log = logging.getLogger("ct.con.list")
 
+"""
+Classes:
+    ConcolicList
+    Concolic_tuple
+"""
+
 class ConcolicList(ConcolicType):
     def __init__(self, value=None):
         self.expr = "LIST"
@@ -40,6 +46,9 @@ class ConcolicList(ConcolicType):
 
     def contains(self, other):
         return ConcolicType('nil', other.value in self.value)
+
+    def not_contains(self, other):
+        return ConcolicType('nil', other.value not in self.value)
 
     def __str__(self):
         if self.size == 0:
@@ -87,3 +96,29 @@ class ConcolicList(ConcolicType):
         if isinstance(index, ConcolicInteger):
             index = index.value
         self.value.insert(index, value)
+
+    def do_del(self, index):
+        value = index.value
+        del self.value[value]
+        self.size -= 1
+
+    def index(self, target):
+        index = 0
+        for val in self.value:
+            if val == target:
+                return ConcolicInteger(index)
+            index += 1
+        
+        return ConcolicInteger(-1)
+
+
+
+
+class Concolic_tuple(ConcolicType):
+    def __init__(self, value):
+        self.expr = "Tuple"
+        self.value = value
+        log.debug("  Tuple: %s" % str(self.value))
+
+    def __str__(self):
+        return "  Tuple: %s" % str(self.value)

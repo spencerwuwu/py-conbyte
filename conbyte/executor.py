@@ -383,9 +383,11 @@ class Executor:
             tos1.store(tos, tos2)
 
         elif instruct.opname is "DELETE_SUBSCR":
-            # TODO: 
-            log.warning("%s Not implemented" % instruct.opname)
-            return
+            tos = mem_stack.pop()
+            tos1 = mem_stack.pop()
+            tos1.do_del(tos)
+            log.debug(" List after deleted:")
+            log.debug(tos1)
 
         #
         # Coroutine opcodes
@@ -567,6 +569,8 @@ class Executor:
                     expr = "nil"
                     value = ConcolicType(expr, None)
                 """
+            elif isinstance(load_value, tuple):
+                value = Concolic_tuple(load_value)
             else:
                 value = load_value
             mem_stack.push(value)
@@ -669,8 +673,15 @@ class Executor:
             op = instruct.argval
             tos = mem_stack.pop()
             tos1 = mem_stack.pop()
+
+            # Handle tuple case patch
+            if isinstance(tos, Concolic_tuple):
+                tos = ConcolicList(tos.value)
+
             if op == "in":
                 mem_stack.push(tos.contains(tos1))
+            elif op == "not in":
+                mem_stack.push(tos.not_contains(tos1))
             else:
                 if isinstance(tos1, ConcolicInteger) or \
                    isinstance(tos1, ConcolicStr):

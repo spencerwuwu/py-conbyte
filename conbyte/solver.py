@@ -81,6 +81,8 @@ class Solver(object):
         log.debug("\n" + stdout.decode())
 
         output = stdout.decode()
+        # print(formulas)
+        # print(output)
 
         if output is None or len(output) == 0:
             ret = "UNKNOWN"
@@ -114,7 +116,7 @@ class Solver(object):
                     result = -int(value)
                 else:
                     result = int(value)
-            elif self.varaibles[name] == "String":
+            else:
                 value = value.replace("\"", "", 1).replace("\"", "", -1)
                 result = value
 
