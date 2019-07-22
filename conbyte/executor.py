@@ -24,7 +24,7 @@ class Executor:
     def _handle_jump(self, frame, instruct, force=False):
         offset = instruct.argval
         instruct = frame.get_instruct(offset)
-        if force and instruct != frame.instructions.top():
+        if force or instruct != frame.instructions.top():
             frame.next_offset = offset
             frame.instructions.sanitize()
             return
@@ -517,6 +517,14 @@ class Executor:
             if isinstance(seqs, ConcolicList):
                 for value in seqs.value:
                     tmp_l.append(value)
+            elif isinstance(seqs, Concolic_tuple):
+                for value in seqs.value:
+                    if isinstance(value, int):
+                        value = ConcolicInteger(value, value)
+                    elif isinstance(value, str):
+                        expr = '\"' + value + '\"'
+                        value = ConcolicStr(expr, value)
+                    tmp_l.append(value)
             else:
                 for seq in seqs:
                     if isinstance(seq, int):
@@ -832,6 +840,8 @@ class Executor:
             for i in range(argv):
                 mem_stack.push(args.pop())
 
+            log.debug("Call function: %s" % func)
+
             # Especially handle
             # Overwrite: implemented in classes
             overwrite = ["len", "int", "join"]
@@ -842,7 +852,7 @@ class Executor:
                 function_to_call = getattr(target, func)
                 mem_stack.push(function_to_call())
                 if func == "int":
-                    self.path.which_branch(target.isdigit(), False)
+                    self.path.which_branch(target.is_number(), False)
 
             elif func == "str":
                 target = mem_stack.pop()

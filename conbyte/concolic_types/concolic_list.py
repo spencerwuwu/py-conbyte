@@ -111,6 +111,40 @@ class ConcolicList(ConcolicType):
         
         return ConcolicInteger(-1)
 
+    def mul(self, other):
+        self.value *= other.value
+        return self
+
+    def add(self, other):
+        self.value += other.value
+        self.size += other.size
+        return self
+
+    def remove(self, target):
+        index = 0
+        for val in self.value:
+            if val.value == target.value:
+                self.value.pop(index)
+                self.size -= 1
+                break
+            index += 1
+    
+    def pop(self, index=None):
+        if index is None:
+            self.size -= 1
+            return self.value.pop()
+        else:
+            if index.value < self.size:
+                self.size -= 1
+                return self.value.pop(index.value)
+            else:
+                return None
+
+    def reverse(self):
+        self.value.reverse()
+
+    def extend(self, target):
+        self = self.add(target)
 
 
 

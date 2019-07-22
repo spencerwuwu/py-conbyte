@@ -41,7 +41,13 @@ class ConcolicStr(ConcolicType):
 
     def int(self):
         value = int(self.value)
-        expr = ["str.to.int", self.expr]
+        expr = ["ite", ["str.prefixof", "\"-\"", self.expr],
+                ["-", ["str.to.int", 
+                       ["str.substr", self.expr, "1", ["-", ["str.len", self.expr], "1"]]
+                      ]
+                ],
+                ["str.to.int", self.expr]
+               ]
         return ConcolicInteger(expr, value)
 
     def get_index(self, index):
@@ -122,11 +128,26 @@ class ConcolicStr(ConcolicType):
                 return ConcolicList([self.get_slice(None, sep_idx)]) + \
                    ConcolicList(self.get_slice(sep_idx + 1).split(sep, maxsplit - 1))
 
+    def is_number(self):
+        value = self.value.isdigit()
+        expr = ["ite", ["str.prefixof", "\"-\"", self.expr], 
+               ["ite", ["=", "(- 1)", 
+                        ["str.to.int", ["str.substr", self.expr, "1", ["-", ["str.len", self.expr], "1"]]]
+                       ],
+                 "false",
+                 "true"
+               ], 
+               ["ite", ["=", "(- 1)", ["str.to.int", self.expr]],
+                 "false",
+                 "true"
+               ]
+              ]
+        return ConcolicType(expr, value)
+
     def isdigit(self):
         value = self.value.isdigit()
-        reg = ["re.++", ["re.opt", ["str.to.re", "\"-\""]], ["re.+", ["re.range", "\"0\"", "\"9\""]]]
-        expr = ["str.in.re", self.expr, reg]
-        return ConcolicStr(expr, value)
+        expr = ["str.in.re", self.expr, ["re.+", ["re.range", "\"0\"", "\"9\""]]]
+        return ConcolicType(expr, value)
 
     def join(self, array):
         # TODO

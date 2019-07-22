@@ -5,6 +5,7 @@ import dis
 import inspect
 import traceback
 import json
+import copy
 
 import coverage
 from func_timeout import func_timeout, FunctionTimedOut
@@ -286,6 +287,7 @@ class ExplorationEngine:
 
     def _one_execution(self, init_vars, expected_path=None):
         log.info("Inputs: " + str(init_vars))
+        copy_vars = copy.deepcopy(init_vars)
 
         self.call_stack.sanitize()
         self.mem_stack.sanitize()
@@ -293,7 +295,7 @@ class ExplorationEngine:
 
         execute = getattr(self.t_module, self.entry)
         sys.settrace(self.trace_calls)
-        ret = execute(*init_vars)
+        ret = execute(*copy_vars)
         sys.settrace(None)
         log.info("Return: %s" % ret)
 
@@ -311,7 +313,8 @@ class ExplorationEngine:
         cov = coverage.Coverage(branch=True)
         for args in self.input_sets:
             cov.start()
-            ret = execute(*args)
+            copy_args = copy.deepcopy(args)
+            ret = execute(*copy_args)
             cov.stop()
             self.global_execution_coverage.update(cov.get_data())
 

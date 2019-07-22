@@ -100,10 +100,10 @@ class Concolic_range():
     def next_iter(self):
         if self.step.value > 0:
             cond_val = self.cur.value < self.end.value
-            cond_exp = ["<", self.cur.expr, self.end.expr]
+            cond_exp = "nil"
         else:
             cond_val = self.cur.value > self.end.value
-            cond_exp = [">", self.cur.expr, self.end.expr]
+            cond_exp = "nil"
 
         if cond_val:
             ret = self.cur
@@ -113,7 +113,7 @@ class Concolic_range():
         return ConcolicType(cond_exp, cond_val), ret
 
     def __str__(self):
-        return "(Inter s: %s, e: %s, step: %s)" % (self.start, self.end, self.step)
+        return "(Inter s: %s, e: %s, c: %s, step: %s)" % (self.start, self.end, self.cur, self.step)
 
     def reverse(self):
         self.step.negate()

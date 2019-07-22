@@ -21,7 +21,7 @@ class Predicate:
         expr = self.concolic.expr
         formula =  self._get_formula(expr)
         if self.result is True:
-            return "(assert " + formula + ")"
+            return "(assert " + formula + ")\n"
         else:
             return "(assert (not " + formula + "))\n"
 
