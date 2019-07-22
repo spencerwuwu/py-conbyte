@@ -1,12 +1,17 @@
+# 415_Add_Strings.py
+
+# Add up the inputs 
+# and determine if the sum is longer than both inputs
+
 def addStrings(num1, num2):
     """
     :type num1: str
     :type num2: str
     :rtype: str
     """
-    if len(num1) == 0 :
+    if len(num1) == 0 or int(num1) <= 0:
         num1 = '0'
-    if len(num2) == 0 :
+    if len(num2) == 0 or int(num2) <= 0:
         num2 = '0'
     res = []
     carry = 0

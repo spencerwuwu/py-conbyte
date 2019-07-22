@@ -1,6 +1,9 @@
 
 # 093_Restore_IP_Addresses.py
 
+# Given a string containing only digits, 
+# restore it by returning all possible valid IP address combinations.
+
 def isValid(add):
     if len(add) == 1:
         return True
@@ -12,7 +15,7 @@ def isValid(add):
 
 def restoreIpAddresses(s):
     ls = len(s)
-    if ls == 0 or ls > 12:
+    if ls == 0 or ls > 12 or not s.isdigit():
         return []
     res = []
     for i in range(1, 4):
