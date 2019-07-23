@@ -90,7 +90,7 @@ class Solver(object):
             output = output.splitlines()
             while "error" in output[0]:
                 output.pop(0)
-            ret = output[0]
+            ret = output[0].lower()
             if "unsat" in ret:
                 ret = "UNSAT"
             elif "sat" in ret:
@@ -98,6 +98,8 @@ class Solver(object):
                 model = self._get_model(output[1:])
             elif "timeout" in ret:
                 ret = "TIMEOUT"
+            elif "unknown" in ret and "error" not in stdout.decode():
+                model = self._get_model(output[1:])
             else:
                 ret = "UNKNOWN"
 

@@ -567,7 +567,11 @@ class Executor:
 
         elif instruct.opname is "LOAD_CONST":
             load_value = instruct.argval
-            if isinstance(load_value, int):
+            if str(load_value) == "True":
+                value = ConcolicType(True, "true")
+            elif str(load_value) == "True":
+                    value = ConcolicType(False, "false")
+            elif isinstance(load_value, int):
                 value = ConcolicInteger(load_value, load_value)
             elif isinstance(load_value, str):
                 expr = '\"' + load_value + '\"'
@@ -962,12 +966,10 @@ class Executor:
         elif instruct.opname is "BUILD_SLICE":
             argv = instruct.argval
             if argv > 2:
-                log.error("Does not support genative step yet")
+                log.error("Does not support step yet")
             args = []
             while argv > 0:
                 var = mem_stack.pop()
-                if var is not None and var.value < 0:
-                    log.error("Does not support negative step yet")
                 args.append(var)
                 argv -= 1
             args.reverse()

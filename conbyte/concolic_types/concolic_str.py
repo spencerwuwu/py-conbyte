@@ -78,6 +78,10 @@ class ConcolicStr(ConcolicType):
         stop = self.len() if stop is None else stop
         start = ConcolicInteger(0) if start is None else start
         value = self.value[start.value:stop.value]
+        if start.value < 0:
+            start.expr = ["+", ["str.len", self.expr], start.expr]
+        if stop.value < 0:
+            stop.expr = ["+", ["str.len", self.expr], stop.expr]
         expr = ["str.substr", self.expr, start.expr, (stop-start+1).expr]
         return ConcolicStr(expr, value)
 
@@ -129,7 +133,7 @@ class ConcolicStr(ConcolicType):
                    ConcolicList(self.get_slice(sep_idx + 1).split(sep, maxsplit - 1))
 
     def is_number(self):
-        value = self.value.isdigit()
+        value = True
         expr = ["ite", ["str.prefixof", "\"-\"", self.expr], 
                ["ite", ["=", "(- 1)", 
                         ["str.to.int", ["str.substr", self.expr, "1", ["-", ["str.len", self.expr], "1"]]]
