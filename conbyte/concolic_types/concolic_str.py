@@ -82,7 +82,7 @@ class ConcolicStr(ConcolicType):
             start.expr = ["+", ["str.len", self.expr], start.expr]
         if stop.value < 0:
             stop.expr = ["+", ["str.len", self.expr], stop.expr]
-        expr = ["str.substr", self.expr, start.expr, (stop-start+1).expr]
+        expr = ["str.substr", self.expr, start.expr, (stop-start).expr]
         return ConcolicStr(expr, value)
 
     
@@ -135,11 +135,14 @@ class ConcolicStr(ConcolicType):
     def is_number(self):
         value = True
         expr = ["ite", ["str.prefixof", "\"-\"", self.expr], 
-               ["ite", ["=", "(- 1)", 
+               ["and", 
+                ["ite", ["=", "(- 1)", 
                         ["str.to.int", ["str.substr", self.expr, "1", ["-", ["str.len", self.expr], "1"]]]
                        ],
                  "false",
                  "true"
+                ],
+                [">", ["str.len", self.expr], "1"]
                ], 
                ["ite", ["=", "(- 1)", ["str.to.int", self.expr]],
                  "false",

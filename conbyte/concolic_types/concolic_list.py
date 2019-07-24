@@ -45,10 +45,30 @@ class ConcolicList(ConcolicType):
         return ConcolicList(self.value[start:stop])
 
     def contains(self, other):
-        return ConcolicType('nil', other.value in self.value)
+        expr = None
+        value = False
+        for val in self.value:
+            if type(val) == type(other):
+                value = value or (val.value == other.value)
+                if expr is None:
+                    expr = ["=", val.expr, other.expr]
+                else:
+                    expr = ["or", expr, ["=", val.expr, other.expr]]
+        return ConcolicType(expr, value)
 
     def not_contains(self, other):
-        return ConcolicType('nil', other.value not in self.value)
+        expr = None
+        value = False
+        for val in self.value:
+            value = value or (val.value == other.value)
+            if type(val) == type(other):
+                if expr is None:
+                    expr = ["=", val.expr, other.expr]
+                else:
+                    expr = ["or", expr, ["=", val.expr, other.expr]]
+        expr = ["not", expr]
+        value = not value
+        return ConcolicType(expr, value)
 
     def __str__(self):
         if self.size == 0:

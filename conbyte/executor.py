@@ -720,7 +720,8 @@ class Executor:
             condition = mem_stack.pop()
             if condition.value:
                 self._handle_jump(c_frame, instruct)
-            self.path.which_branch(condition)
+            if condition is not None:
+                self.path.which_branch(condition)
             return
 
         elif instruct.opname is "POP_JUMP_IF_FALSE":

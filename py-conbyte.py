@@ -29,6 +29,7 @@ def main():
     # Logging configuration
     logging_group = OptionGroup(parser, "Logging Configuration")
     logging_group.add_option("-d", "--debug", dest='debug', action="store_true", help="Enable debug logging")
+    logging_group.add_option("--extract", dest='extract', action="store_true", help="Extract bytecode only")
     logging_group.add_option("-q", "--query", dest='query', action="store", help="Store smt queries", default=None)
     logging_group.add_option("--quiet", dest='quiet', action="store_true", help="No logging")
     logging_group.add_option("-l", "--logfile", dest='logfile', action="store", help="Store log", default=None)
@@ -84,6 +85,9 @@ def main():
         exec(open(inputs_file_full).read(), inputs_space)
 
     engine = ExplorationEngine(path, filename, module, options.entry, inputs_space["INI_ARGS"], query, options.solver_type)
+
+    if options.extract:
+        return
 
     engine.explore(int(options.iteration), options.timeout)
 
