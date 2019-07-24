@@ -17,7 +17,8 @@ def validWordAbbreviation( word, abbr):
             num = int(abbr[i])
             if num == 0 and curr == 0:
                 return False
-            curr = curr * 10 + num
+            # curr = curr * 10 + num
+            curr = int(str(curr) + str(num))
         else:
             pos += curr
             curr = 0
