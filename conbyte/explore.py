@@ -28,7 +28,7 @@ def print_inst(obj):
 
 class ExplorationEngine:
 
-    def __init__(self, path, filename, module, entry, ini_vars, query_store, solver_type):
+    def __init__(self, path, filename, module, entry, ini_vars, query_store, solver_type, ss):
         # Set up import environment
         sys.path.append(path)
         self.t_module = __import__(module)
@@ -53,7 +53,7 @@ class ExplorationEngine:
 
         self.global_execution_coverage = coverage.CoverageData()
 
-        dis.dis(self.t_module)
+        # dis.dis(self.t_module)
 
         self.call_stack = Stack()
         self.mem_stack = Stack()
@@ -72,7 +72,7 @@ class ExplorationEngine:
             if not os.path.isdir(self.query_store):
                 raise IOError("Query folder {} not found".format(self.query_store))
 
-        self.solver = Solver(query_store, solver_type)
+        self.solver = Solver(query_store, solver_type, ss)
 
     def add_constraint(self, constraint):
         self.new_constraints.append(constraint)
@@ -194,7 +194,6 @@ class ExplorationEngine:
         is_return = self.execute_frame(func_name)
 
         while is_return:
-            # print("Return")
             self.call_stack.pop()
             is_return = self.execute_frame(func_name)
 

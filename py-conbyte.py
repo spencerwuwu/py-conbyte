@@ -24,6 +24,7 @@ def main():
     setup_group.add_option("-e", "--entry", dest="entry", action="store", help="Specify entry point, if different than (target).py", default=None)
     setup_group.add_option("-m", "--max_iter", dest="iteration", action="store", help="Specify max iterations", default=50)
     setup_group.add_option("-t", "--timeout", dest="timeout", action="store", help="Specify solver timeout (default = 1sec)", default=None)
+    setup_group.add_option("--ss", dest="ss", action="store_true", default=None)
     parser.add_option_group(setup_group)
 
     # Logging configuration
@@ -38,7 +39,7 @@ def main():
 
     # Solver configuration
     solver_group = OptionGroup(parser, "Solver Configuration")
-    solver_group.add_option("-s", "--solver", dest='solver_type', action="store", help="Solver=[z3, cvc4], default to z3", default="z3")
+    solver_group.add_option("-s", "--solver", dest='solver_type', action="store", help="Solver=[z3seq, z3str, trauc, cvc4], default to z3", default="z3seq")
     parser.add_option_group(solver_group)
 
     (options, args) = parser.parse_args()
@@ -46,9 +47,11 @@ def main():
         parser.error("Missing app to execute")
         sys.exit(1)
 
+    """
     if options.solver_type != "z3" and options.solver_type != "cvc4":
         parser.error("Solver can only be z3 or cvc4")
         sys.exit(1)
+    """
 
     if options.debug:
         log_level = logging.DEBUG
@@ -84,7 +87,7 @@ def main():
         inputs_file_full = os.path.abspath(options.inputs)
         exec(open(inputs_file_full).read(), inputs_space)
 
-    engine = ExplorationEngine(path, filename, module, options.entry, inputs_space["INI_ARGS"], query, options.solver_type)
+    engine = ExplorationEngine(path, filename, module, options.entry, inputs_space["INI_ARGS"], query, options.solver_type, options.ss)
 
     if options.extract:
         return

@@ -14,7 +14,7 @@ class Solver(object):
     cvc_options = ["--produce-models", "--lang", "smt", "--strings-exp", "--quiet"]
     cnt = 0
 
-    def __init__(self, query_store, solver_type):
+    def __init__(self, query_store, solver_type, ss):
         self.query = None
         self.asserts = None
         self.prefix = None
@@ -22,15 +22,24 @@ class Solver(object):
         self.variables = dict()
         self.query_store = query_store
         self.solver_type = solver_type
+        self.ss = ss
 
-        if solver_type == "z3":
+        if solver_type == "z3seq":
+            self.cmd = "z3 -in"
+        elif solver_type == "z3str":
             self.cmd = "z3"
             for option in self.options:
                 self.cmd = self.cmd + " " + self.options[option]
-        else:
+        elif solver_type == "trauc":
+            self.cmd = "trauc"
+            for option in self.options:
+                self.cmd = self.cmd + " " + self.options[option]
+        elif solver_type == "cvc4":
             self.cmd = "cvc4"
             for option in self.cvc_options:
                 self.cmd = self.cmd + " " + option
+
+        print(self.solver_type)
 
 
     def set_variables(self, variables):
@@ -41,7 +50,7 @@ class Solver(object):
 
     def find_counter_example(self, asserts, query, timeout=None):
         start_time = time.process_time()
-        if self.solver_type == "z3":
+        if "z3" in self.solver_type or  "trauc" in self.solver_type:
             if timeout is not None:
                 cmd = self.cmd + " -T:" + str(timeout)
             else:
@@ -150,6 +159,9 @@ $getvars
 
         assignments['query'] = "\n".join(assertion.get_formula() for assertion in self.asserts)
         assignments['query'] += self.query.get_formula()
+        if self.ss:
+            assignments['query'] += "(assert (str.in.re a (re.+ (re.range \"0\" \"1\"))))\n"
+            assignments['query'] += "(assert (str.in.re b (re.+ (re.range \"0\" \"1\"))))\n"
 
         assignments['getvars'] = "\n"
         for name, var in self.variables.items():

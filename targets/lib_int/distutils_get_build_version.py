@@ -2,7 +2,7 @@ def distutils_get_build_version(version):
     prefix = "MSC v."
     i = version.find(prefix)
     if i == -1:
-        return 6, 0
+        return None
     i = i + len(prefix)
     s, rest = version[i:].split(" ", 1)
     if not (s[:-2].isdigit() and s[2:3].isdigit()):
