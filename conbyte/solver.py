@@ -48,7 +48,7 @@ class Solver(object):
                 cmd = self.cmd + " -T:1"
         else:
             if timeout is not None:
-                cmd = self.cmd + ("--tlimit=%s" % (timeout * 1000))
+                cmd = self.cmd + (" --tlimit=%s" % (int(timeout) * 1000))
             else:
                 cmd = self.cmd + " --tlimit=1000"
         self.asserts = asserts

@@ -107,6 +107,7 @@ class ConcolicStr(ConcolicType):
         expr = ["str.suffixof", suffix.expr, self.expr]
         return ConcolicType(expr, value)
 
+    # TODO: Temp 
     def split(self, sep=None, maxsplit=None):
         if isinstance(maxsplit, ConcolicInteger):
             maxsplit = maxsplit.value
@@ -156,6 +157,7 @@ class ConcolicStr(ConcolicType):
         expr = ["str.in.re", self.expr, ["re.+", ["re.range", "\"0\"", "\"9\""]]]
         return ConcolicType(expr, value)
 
+    # TODO: Temp 
     def join(self, array):
         # TODO
         if isinstance(array, ConcolicList):
@@ -178,15 +180,18 @@ class ConcolicStr(ConcolicType):
 
 
     # Return a new string, no continued expr
+    # TODO: Temp 
     def lower(self):
         value = self.value.lower()
         return ConcolicStr('\"' + value + '\"')
 
     # Return a new string, no continued expr
+    # TODO: Temp 
     def upper(self):
         value = self.value.upper()
         return ConcolicStr('\"' + value + '\"')
 
+    # TODO: Temp 
     def replace(self, old, new, maxreplace=-1):
         value = self.value
         expr = self.expr
@@ -212,14 +217,44 @@ class ConcolicStr(ConcolicType):
 
         return ConcolicStr(n_expr, n_value)
 
+    # TODO: Concrete value 
     def count(self, sub):
         count = self.value.count(sub.value)
         return ConcolicInteger(count)
 
 
-    def strip(self, chars=None):
-        value = self.value.strip(chars)
-        return ConcolicStr('\"' + value + '\"')
+    # TODO: Temp 
+    def strip(self, char=None):
+        return self.lstrip(char).rstrip(char)
+
+
+    # TODO: Temp 
+    def lstrip(self, char=None):
+        if char is None:
+            char = ConcolicStr("\" \"", " ")
+        expr = self.expr
+        value = self.value
+        while value.startswith(char.value):
+            value = value[1:]
+            expr = ["ite", ["str.prefixof", char.expr, expr],
+                    ["str.substr", expr, 1, ["-", ["str.len", expr], 1]],
+                    expr
+                   ]
+        return ConcolicStr(expr, value)
+
+    # TODO: Temp 
+    def rstrip(self, char=None):
+        if char is None:
+            char = ConcolicStr("\" \"", " ")
+        expr = self.expr
+        value = self.value
+        while value.endswith(char.value):
+            value = value[:-1]
+            expr = ["ite", ["str.suffixof", char.expr, expr],
+                    ["str.substr", expr, 0, ["-", ["str.len", expr], 1]],
+                    expr
+                   ]
+        return ConcolicStr(expr, value)
 
 
     def store(self, index, value):
