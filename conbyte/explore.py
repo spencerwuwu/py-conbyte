@@ -53,8 +53,6 @@ class ExplorationEngine:
 
         self.global_execution_coverage = coverage.CoverageData()
 
-        # dis.dis(self.t_module)
-
         self.call_stack = Stack()
         self.mem_stack = Stack()
 
@@ -73,6 +71,9 @@ class ExplorationEngine:
                 raise IOError("Query folder {} not found".format(self.query_store))
 
         self.solver = Solver(query_store, solver_type, ss)
+
+    def extract(self):
+        dis.dis(self.t_module)
 
     def add_constraint(self, constraint):
         self.new_constraints.append(constraint)

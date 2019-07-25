@@ -24,7 +24,7 @@ def main():
     setup_group.add_option("-e", "--entry", dest="entry", action="store", help="Specify entry point, if different than (target).py", default=None)
     setup_group.add_option("-m", "--max_iter", dest="iteration", action="store", help="Specify max iterations", default=50)
     setup_group.add_option("-t", "--timeout", dest="timeout", action="store", help="Specify solver timeout (default = 1sec)", default=None)
-    setup_group.add_option("--ss", dest="ss", action="store_true", default=None)
+    setup_group.add_option("--ss", dest="ss", action="store_true", help="Special constraint for add_binays.py", default=None)
     parser.add_option_group(setup_group)
 
     # Logging configuration
@@ -90,6 +90,7 @@ def main():
     engine = ExplorationEngine(path, filename, module, options.entry, inputs_space["INI_ARGS"], query, options.solver_type, options.ss)
 
     if options.extract:
+        engine.extract()
         return
 
     engine.explore(int(options.iteration), options.timeout)
