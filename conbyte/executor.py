@@ -688,7 +688,16 @@ class Executor:
 
             # Handle tuple case patch
             if isinstance(tos, Concolic_tuple):
-                tos = ConcolicList(tos.value)
+                new_list = ConcolicList()
+                for value in tos.value:
+                    if isinstance(value, int):
+                        new_list.append(ConcolicInteger(value))
+                    elif isinstance(value, str):
+                        new_list.append(ConcolicStr("\"" + value + "\""))
+                    else:
+                        new_list.append(value)
+                tos = new_list
+
 
             if op == "in":
                 mem_stack.push(tos.contains(tos1))

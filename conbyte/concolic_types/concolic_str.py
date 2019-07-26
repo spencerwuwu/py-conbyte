@@ -7,6 +7,8 @@ log = logging.getLogger("ct.con.str")
 
 class ConcolicStr(ConcolicType):
     def __init__(self, expr, value=None):
+        if isinstance(expr, str):
+            expr = expr.replace("\r", "\\r").replace("\n", "\\n").replace("\t", "\\t")
         self.expr = expr
 
         if value is None:
@@ -59,9 +61,15 @@ class ConcolicStr(ConcolicType):
         else:
             expr = ["str.at", self.expr, index.expr]
         return ConcolicStr(expr, value)
+    
+    def escape_value(self):
+        value = self.value.replace("\n", "\\n")
+        value = self.value.replace("\r", "\\r")
+        value = self.value.replace("\t", "\\t")
+        return 
 
     def __str__(self):
-        return "{ConStr, value: %s, expr: %s)" % (self.value, self.expr)
+        return "{ConStr, value: %s, expr: %s)" % (self.escape_value(), self.expr)
 
 
     def contains(self, other):
@@ -132,6 +140,12 @@ class ConcolicStr(ConcolicType):
             else:
                 return ConcolicList([self.get_slice(None, sep_idx)]) + \
                    ConcolicList(self.get_slice(sep_idx + 1).split(sep, maxsplit - 1))
+
+    def splitlines(self):
+        if "\r\n" in self.value:
+            return self.split("\r\n")
+        else:
+            return self.split("\n")
 
     def is_number(self):
         value = True

@@ -64,7 +64,7 @@ class Frame:
                             c_var = ConcolicInteger(name, element)
                             symbolic_inputs[name] = "Int"
                         elif isinstance(element, str):
-                            c_var = ConcolicInteger(name, element)
+                            c_var = ConcolicStr(name, element)
                             symbolic_inputs[name] = "String"
                         concolic_var.append(c_var)
                         index += 1
