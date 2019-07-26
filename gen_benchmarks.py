@@ -5,20 +5,20 @@ import os
 from subprocess import Popen, PIPE, STDOUT
 
 def main(target):
-    pys = ["targets/leetcode_int/add_binary.py",
-           "targets/leetcode_int/addStrings.py",
-           "targets/leetcode_int/numDecodings.py",
-           "targets/leetcode_int/restoreIpAddresses.py",
-           "targets/leetcode_int/validIPAddress.py",
-           "targets/leetcode_int/validWordAbbreviation.py",
-           "targets/lib_int/datetime__parse_hh_mm_ss_ff.py",
-           "targets/lib_int/datetime__parse_isoformat_date.py",
-           "targets/lib_int/distutils_get_build_version.py",
-           "targets/lib_int/email__parsedate_tz.py",
-           "targets/lib_int/http_parse_request.py",
-           "targets/lib_int/nntplib__parse_datetime.py",
-           "targets/lib_int/smtpd_parseargs.py",
-           "targets/lib_int/wsgiref_check_status.py"]
+    pys = ["target_int/leetcode_int/add_binary.py",
+           "target_int/leetcode_int/addStrings.py",
+           "target_int/leetcode_int/numDecodings.py",
+           "target_int/leetcode_int/restoreIpAddresses.py",
+           "target_int/leetcode_int/validIPAddress.py",
+           "target_int/leetcode_int/validWordAbbreviation.py",
+           "target_int/lib_int/datetime__parse_hh_mm_ss_ff.py",
+           "target_int/lib_int/datetime__parse_isoformat_date.py",
+           "target_int/lib_int/distutils_get_build_version.py",
+           "target_int/lib_int/email__parsedate_tz.py",
+           "target_int/lib_int/http_parse_request.py",
+           "target_int/lib_int/nntplib__parse_datetime.py",
+           "target_int/lib_int/smtpd_parseargs.py",
+           "target_int/lib_int/wsgiref_check_status.py"]
 
     inputs = ["[\"1001\", \"111\"]",
               "[\"14950\", \"385769\"]",
@@ -37,7 +37,7 @@ def main(target):
              ]
     index = 0
     for py in pys:
-        b_path = "benchmarks/py-conbyte_%s/%s" % (target, py.replace("targets/", "").replace(".py", "").replace("/", "-"))
+        b_path = "benchmarks/py-conbyte_%s/%s" % (target, py.replace("target_int/", "").replace(".py", "").replace("/", "-"))
         os.system("mkdir -p %s" % b_path)
         cmd = "./py-conbyte.py --stdin -s %s -m 300 -t 3 -q %s " % (target, b_path)
         if "add_binary" in py:

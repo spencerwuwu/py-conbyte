@@ -39,7 +39,6 @@ class Solver(object):
             for option in self.cvc_options:
                 self.cmd = self.cmd + " " + option
 
-        print(self.solver_type)
 
 
     def set_variables(self, variables):
