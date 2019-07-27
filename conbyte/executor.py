@@ -12,6 +12,7 @@ from .concolic_types.concolic_iter import *
 
 from .regex import *
 import re
+import time
 
 log = logging.getLogger("ct.executor")
 
@@ -108,6 +109,7 @@ class Executor:
         return ConcolicType(expr, value)
 
     def execute_instr(self, call_stack, instruct, func_name=None):
+        #time.sleep(.5)
         c_frame = call_stack.top()
         mem_stack = c_frame.mem_stack
         variables = c_frame.variables
@@ -453,6 +455,7 @@ class Executor:
                     ret_value = variables["self"]
             mem_stack.push(ret_value)
             log.debug("    Return: %s" % ret_value)
+            c_frame.instructions.sanitize()
             return True
 
         elif instruct.opname is "YIELD_VALUE":

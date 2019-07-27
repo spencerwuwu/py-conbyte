@@ -1,20 +1,19 @@
 
 def map2dec(char):
-    if char >= "0" and char <= "9":
-        return int(char)
+    if char == "a" or char == "A":
+        return 10
+    elif char == "b" or char == "B":
+        return 11
+    elif char == "c" or char == "C":
+        return 12
+    elif char == "d" or char == "D":
+        return 13
+    elif char == "e" or char == "E":
+        return 14
+    elif char == "f" or char == "F":
+        return 15
     else:
-        if char == "a" or char == "A":
-            return 10
-        elif char == "b" or char == "B":
-            return 11
-        elif char == "c" or char == "C":
-            return 12
-        elif char == "d" or char == "D":
-            return 13
-        elif char == "e" or char == "E":
-            return 14
-        elif char == "f" or char == "F":
-            return 15
+        return int(char)
 
 def hex2int(orig):
     num = 0
@@ -73,10 +72,10 @@ def ipaddress__ip_int_from_string(ip_str):
 
     # Disregarding the endpoints, find '::' with nothing in between.
     # This indicates that a run of zeroes has been skipped.
-    skip_index = None
+    skip_index = 0
     for i in range(1, len(parts) - 1):
-        if not parts[i]:
-            if skip_index is not None:
+        if len(parts[i]) == 0:
+            if skip_index != 0: 
                 # Can't have more than one '::'
                 msg = "At most one '::' permitted in ip"
                 return msg
@@ -84,16 +83,16 @@ def ipaddress__ip_int_from_string(ip_str):
 
     # parts_hi is the number of parts to copy from above/before the '::'
     # parts_lo is the number of parts to copy from below/after the '::'
-    if skip_index is not None:
+    if skip_index != 0:
         # If we found a '::', then check if it also covers the endpoints.
         parts_hi = skip_index
         parts_lo = len(parts) - skip_index - 1
-        if not parts[0]:
+        if len(parts[0]) == 0:
             parts_hi -= 1
             if parts_hi:
                 msg = "Leading ':' only permitted as part of '::' in ip"
                 return msg
-        if not parts[-1]:
+        if len(parts[-1]) == 0:
             parts_lo -= 1
             if parts_lo:
                 msg = "Trailing ':' only permitted as part of '::' in ip"
@@ -109,10 +108,10 @@ def ipaddress__ip_int_from_string(ip_str):
         if len(parts) != _HEXTET_COUNT:
             msg = "Exactly 8 parts expected without '::' in ip"
             return msg
-        if not parts[0]:
+        if len(parts[0]) == 0:
             msg = "Leading ':' only permitted as part of '::' in ip"
             return msg
-        if not parts[-1]:
+        if len(parts[-1]) == 0:
             msg = "Trailing ':' only permitted as part of '::' in ip"
             return msg
         parts_hi = len(parts)

@@ -64,9 +64,9 @@ class ConcolicStr(ConcolicType):
     
     def escape_value(self):
         value = self.value.replace("\n", "\\n")
-        value = self.value.replace("\r", "\\r")
-        value = self.value.replace("\t", "\\t")
-        return 
+        value = value.replace("\r", "\\r")
+        value = value.replace("\t", "\\t")
+        return value
 
     def __str__(self):
         return "{ConStr, value: %s, expr: %s)" % (self.escape_value(), self.expr)
