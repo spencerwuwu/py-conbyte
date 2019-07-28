@@ -228,6 +228,7 @@ class ExplorationEngine:
     def explore(self, max_iterations, timeout=None):
         # First Execution
         self._one_execution(self.ini_vars)
+        self.executor.extend_prune()
         iterations = 1
 
         # TODO: Currently single thread
@@ -245,10 +246,12 @@ class ExplorationEngine:
             else:
                 cnt = 0
                 while not self.constraints_to_solve.is_empty():
-                    target = self.constraints_to_solve.pop()
+                    target, extend_var, extend_queries = self.constraints_to_solve.pop()
                     log.debug("Solving: %s" % target)
                     asserts, query = target.get_asserts_and_query()
-                    ret, model = self.solver.find_counter_example(asserts, query, timeout)
+
+                    ret, model = self.solver.find_counter_example(asserts, query, extend_var, extend_queries, timeout)
+
                     self.solved_constraints.push((target.id, ret, model))
                     # Every 4 solve check if any new inputs
                     cnt += 1
@@ -267,6 +270,7 @@ class ExplorationEngine:
                 except Exception as e: 
                     log.error("Execution exception for: %s" % args)
                     traceback.print_exc()
+                self.executor.extend_prune()
                 if args not in self.input_sets:
                     self.error_sets.append(args)
                 self.num_processed_constraints += 1
@@ -302,7 +306,8 @@ class ExplorationEngine:
         while len(self.new_constraints) > 0:
             constraint = self.new_constraints.pop()
             constraint.inputs = self._getInputs()
-            self.constraints_to_solve.push(constraint)
+            extend_var, extend_queries = self.executor.get_extend()
+            self.constraints_to_solve.push((constraint, extend_var, extend_queries))
 
         self.input_sets.append(init_vars)
         self.in_ret_sets.append({"input": init_vars, "result": ret})

@@ -22,6 +22,20 @@ class Executor:
         self.overwrite_method = False
         self.build_slice = False
 
+        # Used to shorten the size of formulas
+        self.extend_vars = dict()
+        self.extend_queries = []
+        self.collect_extend = False
+        self.extend_cnt = 0
+
+    def get_extend(self):
+        return (self.extend_vars, self.extend_queries)
+
+    def extend_prune(self):
+        self.extend_vars = dict()
+        self.extend_queries = []
+        self.extend_cnt = 0
+
     def _handle_jump(self, frame, instruct, force=False):
         offset = instruct.argval
         instruct = frame.get_instruct(offset)
@@ -933,6 +947,8 @@ class Executor:
                isinstance(target, RegexPattern) or \
                isinstance(target, RegexMatch) or \
                isinstance(target, ConcolicList):
+                if method == "split" or method == "splitlines":
+                    self.collect_extend = True
                 method_to_call = getattr(target, method)
                 mem_stack.push(method_to_call)
                 self.overwrite_method = True
@@ -968,6 +984,21 @@ class Executor:
                 method_to_call = mem_stack.pop()
                 mem_stack.push(method_to_call(*args))
                 self.overwrite_method = False
+
+                if self.collect_extend:
+                    t_list = mem_stack.top()
+                    for val in t_list.value:
+                        var_name = "_EXTEND_VAR_%s" % self.extend_cnt
+                        if isinstance(val, ConcolicStr):
+                            self.extend_vars[var_name] = "String"
+                        else:
+                            self.extend_vars[var_name] = "Int"
+                        query = "(assert (= %s %s))" % (var_name, val.to_formula())
+                        self.extend_queries.append(query)
+                        val.expr = var_name
+                        self.extend_cnt += 1
+                self.collect_extend = False
+
             else:
                 return
 

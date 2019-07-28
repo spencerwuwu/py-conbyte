@@ -47,7 +47,7 @@ class Solver(object):
             self.variables[v] = variables[v]
 
 
-    def find_counter_example(self, asserts, query, timeout=None):
+    def find_counter_example(self, asserts, query, extend_vars, extend_queries, timeout=None):
         start_time = time.process_time()
         if "z3" in self.solver_type or  "trauc" in self.solver_type:
             if timeout is not None:
@@ -61,15 +61,15 @@ class Solver(object):
                 cmd = self.cmd + " --tlimit=1000"
         self.asserts = asserts
         self.query = query
-        result, model = self._find_model(cmd)
+        result, model = self._find_model(cmd, extend_vars, extend_queries)
         endtime = time.process_time()
         solve_time = endtime - start_time
         return result, model
 
 
-    def _find_model(self, cmd):
+    def _find_model(self, cmd, extend_vars, extend_queries):
 
-        formulas = self._build_expr()
+        formulas = self._build_expr(extend_vars, extend_queries)
 
         # log.debug("\n" + formulas)
         if self.query_store is not None:
@@ -86,6 +86,7 @@ class Solver(object):
             print(e.output)
 
         stdout, stderr = process.communicate(input=formulas.encode())
+
         log.debug("\n" + stdout.decode())
 
         output = stdout.decode()
@@ -140,7 +141,7 @@ class Solver(object):
         return model
 
 
-    def _build_expr(self):
+    def _build_expr(self, extend_vars, extend_queries):
         f_template = Template("""
 $declarevars
 
@@ -156,11 +157,17 @@ $getvars
             if var != "List":
                 assignments['declarevars'] += "(declare-fun {} () {})\n".format(name, var)
 
+        for (name, var) in extend_vars.items():
+            assignments['declarevars'] += "(declare-fun {} () {})\n".format(name, var)
+
         assignments['query'] = "\n".join(assertion.get_formula() for assertion in self.asserts)
         assignments['query'] += self.query.get_formula()
         if self.ss:
             assignments['query'] += "(assert (str.in.re a (re.+ (re.range \"0\" \"1\"))))\n"
             assignments['query'] += "(assert (str.in.re b (re.+ (re.range \"0\" \"1\"))))\n"
+
+        for query in extend_queries:
+            assignments['query'] += "%s\n" % query
 
         assignments['getvars'] = "\n"
         for name, var in self.variables.items():

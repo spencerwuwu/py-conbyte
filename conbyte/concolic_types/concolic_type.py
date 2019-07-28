@@ -14,6 +14,27 @@ class ConcolicType(object):
         self.value = value
         log.debug("  ConType, value %s, expr: %s" % (value, expr))
 
+    def to_formula(self):
+        expr = self.expr
+        formula = self._to_formula(expr)
+        return formula
+
+    def _to_formula(self, expr):
+        if isinstance(expr, list):
+            formula = "( "
+            for exp in expr:
+                formula += self._to_formula(exp) + " "
+            return formula + " )"
+        else:
+            if isinstance(expr, int):
+                if expr < 0:
+                    ret = "(- %s)" % -expr
+                else:
+                    ret = str(expr)
+                return ret
+            else:
+                return str(expr)
+
     def get_concrete(self):
         return self.value
     
