@@ -142,10 +142,10 @@ class ConcolicStr(ConcolicType):
                    ConcolicList(self.get_slice(sep_idx + 1).split(sep, maxsplit - 1))
 
     def splitlines(self):
-        if "\r\n" in self.value:
-            return self.split("\r\n")
+        if "\\r\\n" in self.value:
+            return self.split("\\r\\n")
         else:
-            return self.split("\n")
+            return self.split("\\n")
 
     def is_number(self):
         value = True

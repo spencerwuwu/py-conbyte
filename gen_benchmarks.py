@@ -18,7 +18,9 @@ def main(target):
            "target_int/lib_int/http_parse_request.py",
            "target_int/lib_int/nntplib__parse_datetime.py",
            "target_int/lib_int/smtpd_parseargs.py",
-           "target_int/lib_int/wsgiref_check_status.py"]
+           "target_int/lib_int/wsgiref_check_status.py",
+           "target_int/lib_int/ipaddress__ip_int_from_string.py",
+           ]
 
     inputs = ["[\"1001\", \"111\"]",
               "[\"14950\", \"385769\"]",
@@ -33,7 +35,8 @@ def main(target):
               "[\"HTTP/1.0\"]",
               "[\"20190723121212\"]",
               "[\"localhost:8025\", \"localhost:25\"]",
-              "[\"200 ok\"]"
+              "[\"200 ok\"]",
+              "[\"2001:0db8:85a3:0:0:8A2E:0370:7334\"]"
              ]
     index = 0
     for py in pys:
