@@ -325,9 +325,14 @@ class ExplorationEngine:
 
 
     def print_coverage(self):
-        total_lines, executed_lines, executed_branches = self.coverage_statistics()
+        total_lines, executed_lines, missing_lines, executed_branches = self.coverage_statistics()
         print("Line coverage {}/{} ({:.2%})".format(executed_lines, total_lines, (executed_lines/total_lines) if total_lines > 0 else 0))
         print("Branch coverage {}".format(executed_branches))
+        if len(missing_lines) > 0:
+            print("Missing lines:")
+            for file, lines in missing_lines.items():
+                print("  {}: {}".format(file, lines))
+        print("")
 
 
     def coverage_statistics(self):
@@ -335,6 +340,7 @@ class ExplorationEngine:
         total_lines = 0
         executed_lines = 0
         executed_branches = 0
+        missing_lines = {}
         for file in self.global_execution_coverage.measured_files():
             _, executable_lines, _, _ = cov.analysis(file)
 
@@ -342,7 +348,15 @@ class ExplorationEngine:
             total_lines += (len(set(executable_lines)) - 1)
             executed_lines += len(set(self.global_execution_coverage.lines(file)))
             executed_branches += len(set(self.global_execution_coverage.arcs(file)))
-        return total_lines, executed_lines, executed_branches
+
+            # executable_lines starting from 1 do discard the 'def xx():' line
+            m_lines = []
+            for line in set(executable_lines[1:]):
+                if line not in self.global_execution_coverage.lines(file):
+                    m_lines.append(line)
+            if len(m_lines) > 0:
+                missing_lines[file] = m_lines
+        return total_lines, executed_lines, missing_lines, executed_branches
 
     def result_to_json(self):
         res = dict()

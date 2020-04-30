@@ -44,6 +44,12 @@ class ConcolicInteger(ConcolicType):
     def int(self):
         return self
 
+    def is_number(self):
+        value = True
+        expr = ["=", 1, 1]
+        #return ConcolicType(expr, value)
+        return ConcolicType(True, "true")
+
 ops = [("add", "+", "+"),
        ("sub", "-", "-"),
        ("mul", "*", "*"),

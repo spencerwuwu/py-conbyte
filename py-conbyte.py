@@ -1,4 +1,4 @@
-#!/usr/bin/env python3.7
+#!/usr/bin/env python3
 
 import sys
 import os
@@ -10,6 +10,13 @@ from optparse import OptionGroup
 
 from conbyte.function import *
 from conbyte.explore import *
+
+import warnings
+
+with warnings.catch_warnings():
+    warnings.simplefilter('ignore', SyntaxWarning)
+    # simulate import of module giving SyntaxWarning
+    warnings.warn('bad', SyntaxWarning)
 
 
 
